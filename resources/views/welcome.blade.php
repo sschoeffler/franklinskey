@@ -123,6 +123,19 @@
             background-clip: text;
         }
 
+        .tagline {
+            font-size: 1.05rem;
+            line-height: 1.7;
+            color: #94a3b8;
+            margin-bottom: 1.5rem;
+        }
+
+        .tagline em {
+            color: #fbbf24;
+            font-style: normal;
+            font-weight: 600;
+        }
+
         /* Coming Soon badge */
         .badge {
             display: inline-block;
@@ -200,6 +213,8 @@
         <div class="key-icon">&#x1F5DD;</div>
 
         <h1 class="site-name">Franklin's Key</h1>
+
+        <p class="tagline">Ben Franklin caught lightning with a key on a kite string<br>and unlocked the age of electricity.<br>This is the key that unlocks it for <em>you</em>.</p>
 
         <div class="badge">Coming Soon</div>
 
