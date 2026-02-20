@@ -140,8 +140,9 @@
         }
 
         .tagline {
-            font-size: 1.05rem;
-            line-height: 1.7;
+            font-size: 1.3rem;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
             color: #94a3b8;
             margin-bottom: 1.5rem;
         }
@@ -149,7 +150,7 @@
         .tagline em {
             color: #fbbf24;
             font-style: normal;
-            font-weight: 600;
+            font-weight: 700;
         }
 
         /* Coming Soon badge */
@@ -233,7 +234,7 @@
         <img src="/images/franklin-kite.jpg" alt="Benjamin Franklin Drawing Electricity from the Sky, by Benjamin West, c. 1816" class="painting">
         <p class="painting-credit">Benjamin West, c. 1816 &middot; Public domain</p>
 
-        <p class="tagline">Ben Franklin captured electricity with a key on a kite.<br>Now Franklin's Key captures electricity for <em>you</em>.</p>
+        <p class="tagline"><em>Unlock Electricity</em></p>
 
         <div class="badge">Coming Soon</div>
 
