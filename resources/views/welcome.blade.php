@@ -21,7 +21,7 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            overflow: hidden;
+            overflow-x: hidden;
         }
 
         /* Animated grid */
@@ -98,6 +98,22 @@
             text-align: center;
             padding: 2rem;
             max-width: 600px;
+        }
+
+        .painting {
+            width: clamp(220px, 50vw, 320px);
+            border-radius: 12px;
+            border: 1px solid rgba(245, 158, 11, 0.15);
+            box-shadow: 0 0 40px rgba(245, 158, 11, 0.1);
+            margin-bottom: 1.5rem;
+            opacity: 0.9;
+        }
+
+        .painting-credit {
+            font-size: 0.65rem;
+            color: #475569;
+            margin-top: -1rem;
+            margin-bottom: 1.25rem;
         }
 
         .key-icon {
@@ -213,6 +229,9 @@
         <div class="key-icon">&#x1F5DD;</div>
 
         <h1 class="site-name">Franklin's Key</h1>
+
+        <img src="/images/franklin-kite.jpg" alt="Benjamin Franklin Drawing Electricity from the Sky, by Benjamin West, c. 1816" class="painting">
+        <p class="painting-credit">Benjamin West, c. 1816 &middot; Public domain</p>
 
         <p class="tagline">Ben Franklin caught lightning with a key on a kite string<br>and unlocked the age of electricity.<br>This is the key that unlocks it for <em>you</em>.</p>
 
