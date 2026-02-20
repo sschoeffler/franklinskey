@@ -233,7 +233,7 @@
         <img src="/images/franklin-kite.jpg" alt="Benjamin Franklin Drawing Electricity from the Sky, by Benjamin West, c. 1816" class="painting">
         <p class="painting-credit">Benjamin West, c. 1816 &middot; Public domain</p>
 
-        <p class="tagline">Ben Franklin caught lightning with a key on a kite string<br>and unlocked the age of electricity.<br>This is the key that unlocks it for <em>you</em>.</p>
+        <p class="tagline">Ben Franklin captured electricity with a key on a kite.<br>Now Franklin's Key captures electricity for <em>you</em>.</p>
 
         <div class="badge">Coming Soon</div>
 
