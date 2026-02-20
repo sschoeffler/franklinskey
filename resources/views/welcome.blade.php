@@ -123,13 +123,6 @@
             background-clip: text;
         }
 
-        .tagline {
-            font-size: 1.1rem;
-            color: #94a3b8;
-            margin-bottom: 2rem;
-            line-height: 1.6;
-        }
-
         /* Coming Soon badge */
         .badge {
             display: inline-block;
@@ -207,8 +200,6 @@
         <div class="key-icon">&#x1F5DD;</div>
 
         <h1 class="site-name">Franklin's Key</h1>
-
-        <p class="tagline">AI-powered circuit building for Arduino &amp; ESP32 beginners</p>
 
         <div class="badge">Coming Soon</div>
 
