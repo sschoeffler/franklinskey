@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Franklin's Key — AI-Powered Circuit Building</title>
+    <title>Franklin's Key — Unlock Electricity</title>
     <meta name="description" content="Franklin's Key — AI-powered circuit building assistant for Arduino and ESP32 beginners.">
 
     <link rel="preconnect" href="https://fonts.bunny.net">
