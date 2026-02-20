@@ -4,100 +4,177 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Franklin's Key — AI-Powered Circuit Building</title>
-    <meta name="description" content="Franklin's Key. Coming soon.">
+    <meta name="description" content="Franklin's Key — AI-powered circuit building assistant for Arduino and ESP32 beginners.">
 
     <link rel="preconnect" href="https://fonts.bunny.net">
-    <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700,800|playfair-display:700,800" rel="stylesheet">
+    <link href="https://fonts.bunny.net/css?family=figtree:400,500,600,700,800" rel="stylesheet">
 
     <style>
         *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
-        :root {
-            --midnight: #0a0e1a;
-            --deep-blue: #0f1629;
-            --electric: #7dd3fc;
-            --electric-bright: #38bdf8;
-            --lightning: #fbbf24;
-            --lightning-bright: #fcd34d;
-            --white: #f8fafc;
-            --gray: #94a3b8;
-            --dim: #475569;
-        }
-
         body {
-            font-family: 'Inter', -apple-system, sans-serif;
-            background: var(--midnight);
-            color: var(--white);
-            line-height: 1.6;
-            overflow-x: hidden;
+            font-family: 'Figtree', -apple-system, sans-serif;
+            background: #0a0a0f;
+            color: #e0e0e8;
             min-height: 100vh;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
+            overflow: hidden;
         }
 
-        @keyframes pulse-glow {
-            0%, 100% { text-shadow: 0 0 20px rgba(251, 191, 36, 0.3); }
-            50% { text-shadow: 0 0 40px rgba(251, 191, 36, 0.6), 0 0 80px rgba(251, 191, 36, 0.2); }
-        }
-
-        @keyframes subtle-float {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-5px); }
-        }
-
-        @keyframes blink {
-            0%, 50% { opacity: 1; }
-            51%, 100% { opacity: 0; }
-        }
-
-        .bg-glow {
+        /* Animated grid */
+        .bg-grid {
             position: fixed;
             inset: 0;
-            background:
-                radial-gradient(ellipse at 50% 40%, rgba(251, 191, 36, 0.06) 0%, transparent 60%),
-                radial-gradient(ellipse at 50% 90%, rgba(125, 211, 252, 0.03) 0%, transparent 50%);
+            background-image:
+                linear-gradient(rgba(245, 158, 11, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(245, 158, 11, 0.03) 1px, transparent 1px);
+            background-size: 60px 60px;
+            animation: gridShift 20s linear infinite;
             pointer-events: none;
         }
 
+        @keyframes gridShift {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(60px, 60px); }
+        }
+
+        /* Gradient orbs */
+        .orb {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(100px);
+            pointer-events: none;
+        }
+
+        .orb-1 {
+            width: 600px;
+            height: 600px;
+            background: #f59e0b;
+            opacity: 0.08;
+            top: -15%;
+            left: -10%;
+            animation: orbFloat 15s ease-in-out infinite;
+        }
+
+        .orb-2 {
+            width: 500px;
+            height: 500px;
+            background: #d97706;
+            opacity: 0.06;
+            bottom: -15%;
+            right: -10%;
+            animation: orbFloat 18s ease-in-out infinite reverse;
+        }
+
+        .orb-3 {
+            width: 400px;
+            height: 400px;
+            background: #06b6d4;
+            opacity: 0.05;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            animation: orbPulse 10s ease-in-out infinite;
+        }
+
+        @keyframes orbFloat {
+            0%, 100% { transform: translate(0, 0); }
+            33% { transform: translate(30px, -25px); }
+            66% { transform: translate(-20px, 35px); }
+        }
+
+        @keyframes orbPulse {
+            0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.05; }
+            50% { transform: translate(-50%, -50%) scale(1.2); opacity: 0.09; }
+        }
+
+        /* Content */
         .container {
             position: relative;
+            z-index: 1;
             text-align: center;
             padding: 2rem;
             max-width: 600px;
         }
 
-        /* The key icon — 0--m.com visual */
         .key-icon {
-            font-size: 4rem;
-            margin-bottom: 2rem;
-            animation: subtle-float 4s ease-in-out infinite;
-            color: var(--lightning);
-            animation: pulse-glow 3s infinite, subtle-float 4s ease-in-out infinite;
+            font-size: 3.5rem;
+            margin-bottom: 1.5rem;
+            animation: keyFloat 4s ease-in-out infinite;
+            display: inline-block;
+        }
+
+        @keyframes keyFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
         }
 
         .site-name {
-            font-family: 'Playfair Display', serif;
             font-size: clamp(2.5rem, 7vw, 4rem);
             font-weight: 800;
-            margin-bottom: 1rem;
             line-height: 1.1;
+            margin-bottom: 1.25rem;
+            background: linear-gradient(135deg, #f59e0b, #fbbf24, #fcd34d);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
-        .site-name .highlight {
-            color: var(--lightning);
+        .tagline {
+            font-size: 1.1rem;
+            color: #94a3b8;
+            margin-bottom: 2rem;
+            line-height: 1.6;
         }
 
-        .coming-soon {
-            font-size: 0.85rem;
-            font-weight: 600;
+        /* Coming Soon badge */
+        .badge {
+            display: inline-block;
+            padding: 0.5rem 1.5rem;
+            font-size: 0.75rem;
+            font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 0.2em;
-            color: var(--electric-bright);
-            margin-bottom: 2rem;
+            color: #fbbf24;
+            background: rgba(245, 158, 11, 0.08);
+            border: 1px solid rgba(245, 158, 11, 0.15);
+            border-radius: 100px;
+            animation: badgePulse 3s ease-in-out infinite;
         }
 
+        @keyframes badgePulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); }
+            50% { box-shadow: 0 0 20px 0 rgba(245, 158, 11, 0.15); }
+        }
+
+        /* Circuit decoration */
+        .circuit-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 8px;
+            width: 240px;
+            margin: 2.5rem auto 0;
+        }
+
+        .circuit-node {
+            width: 100%;
+            aspect-ratio: 1;
+            border-radius: 4px;
+            background: rgba(245, 158, 11, 0.03);
+            border: 1px solid rgba(245, 158, 11, 0.06);
+            animation: nodeGlow var(--cycle, 4s) ease-in-out infinite;
+            animation-delay: var(--delay, 0s);
+        }
+
+        @keyframes nodeGlow {
+            0%, 100% { background: rgba(245, 158, 11, 0.03); border-color: rgba(245, 158, 11, 0.06); }
+            50% { background: rgba(245, 158, 11, 0.12); border-color: rgba(245, 158, 11, 0.25); }
+        }
+
+        /* Footer */
         footer {
             position: fixed;
             bottom: 1.5rem;
@@ -105,40 +182,51 @@
             right: 0;
             text-align: center;
             font-size: 0.8rem;
-            color: var(--dim);
+            color: #475569;
+            z-index: 1;
         }
 
         footer a {
-            color: var(--gray);
+            color: #64748b;
             text-decoration: none;
+            transition: color 0.3s;
         }
 
         footer a:hover {
-            color: var(--lightning);
-        }
-
-        @media (max-width: 500px) {
-            .signup-form {
-                flex-direction: column;
-            }
+            color: #f59e0b;
         }
     </style>
 </head>
 <body>
-    <div class="bg-glow"></div>
+    <div class="bg-grid"></div>
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
 
     <div class="container">
         <div class="key-icon">&#x1F5DD;</div>
 
-        <h1 class="site-name">Franklin's <span class="highlight">Key</span></h1>
+        <h1 class="site-name">Franklin's Key</h1>
 
-        <div class="coming-soon">Coming Soon</div>
+        <p class="tagline">AI-powered circuit building for Arduino &amp; ESP32 beginners</p>
+
+        <div class="badge">Coming Soon</div>
+
+        <!-- Circuit decoration grid -->
+        <div class="circuit-grid">
+            <script>
+                // Generate 36 nodes with random timing
+                document.currentScript.parentElement.innerHTML += Array.from({length: 36}, (_, i) => {
+                    const cycle = (2 + Math.random() * 6).toFixed(1);
+                    const delay = (Math.random() * 4).toFixed(1);
+                    return `<div class="circuit-node" style="--cycle:${cycle}s;--delay:${delay}s"></div>`;
+                }).join('');
+            </script>
+        </div>
     </div>
 
     <footer>
         <p>&copy; {{ date('Y') }} Franklin's Key &middot; <a href="mailto:hello@franklinskey.ai">hello@franklinskey.ai</a></p>
     </footer>
-
-
 </body>
 </html>
