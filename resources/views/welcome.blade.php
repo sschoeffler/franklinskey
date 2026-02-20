@@ -4,13 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Franklin's Key — AI-Powered Circuit Building</title>
-    <meta name="description" content="Describe what you want to build. We handle the wiring and the code. Arduino and ESP32 projects made effortless.">
-
-    <!-- Open Graph -->
-    <meta property="og:title" content="Franklin's Key">
-    <meta property="og:description" content="Describe what you want to build. We handle the wiring and the code.">
-    <meta property="og:url" content="https://franklinskey.ai">
-    <meta property="og:type" content="website">
+    <meta name="description" content="Franklin's Key. Coming soon.">
 
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700,800|playfair-display:700,800" rel="stylesheet">
@@ -95,18 +89,6 @@
             color: var(--lightning);
         }
 
-        .tagline {
-            font-size: 1.3rem;
-            color: var(--gray);
-            margin-bottom: 0.5rem;
-        }
-
-        .sub-tagline {
-            font-size: 1rem;
-            color: var(--dim);
-            margin-bottom: 3rem;
-        }
-
         .coming-soon {
             font-size: 0.85rem;
             font-weight: 600;
@@ -114,58 +96,6 @@
             letter-spacing: 0.2em;
             color: var(--electric-bright);
             margin-bottom: 2rem;
-        }
-
-        /* Email signup */
-        .signup-form {
-            display: flex;
-            gap: 0.75rem;
-            justify-content: center;
-            max-width: 440px;
-            margin: 0 auto 1rem;
-        }
-
-        .signup-form input {
-            flex: 1;
-            padding: 0.9rem 1.25rem;
-            background: rgba(15, 22, 41, 0.8);
-            border: 1px solid var(--dim);
-            border-radius: 8px;
-            color: var(--white);
-            font-size: 0.95rem;
-            font-family: 'Inter', sans-serif;
-        }
-
-        .signup-form input::placeholder {
-            color: var(--dim);
-        }
-
-        .signup-form input:focus {
-            outline: none;
-            border-color: var(--lightning);
-        }
-
-        .signup-form button {
-            padding: 0.9rem 1.75rem;
-            background: var(--lightning);
-            color: var(--midnight);
-            border: none;
-            border-radius: 8px;
-            font-size: 0.95rem;
-            font-weight: 700;
-            cursor: pointer;
-            white-space: nowrap;
-            transition: all 0.3s;
-        }
-
-        .signup-form button:hover {
-            background: var(--lightning-bright);
-            transform: translateY(-1px);
-        }
-
-        .signup-note {
-            font-size: 0.8rem;
-            color: var(--dim);
         }
 
         footer {
@@ -202,39 +132,13 @@
 
         <h1 class="site-name">Franklin's <span class="highlight">Key</span></h1>
 
-        <p class="tagline">Describe it. Connect it. It turns on.</p>
-        <p class="sub-tagline">AI-powered circuit building for Arduino &amp; ESP32</p>
-
         <div class="coming-soon">Coming Soon</div>
-
-        <form class="signup-form" method="POST" action="#" onsubmit="return handleSignup(event)">
-            <input type="email" name="email" placeholder="you@example.com" required>
-            <button type="submit">Notify Me</button>
-        </form>
-        <p class="signup-note">We'll let you know when we launch. No spam.</p>
     </div>
 
     <footer>
         <p>&copy; {{ date('Y') }} Franklin's Key &middot; <a href="mailto:hello@franklinskey.ai">hello@franklinskey.ai</a></p>
     </footer>
 
-    <script>
-        function handleSignup(e) {
-            e.preventDefault();
-            const form = e.target;
-            const button = form.querySelector('button');
 
-            button.textContent = 'You\'re in!';
-            button.style.background = '#22c55e';
-            form.querySelector('input').value = '';
-
-            setTimeout(() => {
-                button.textContent = 'Notify Me';
-                button.style.background = '';
-            }, 3000);
-
-            return false;
-        }
-    </script>
 </body>
 </html>
