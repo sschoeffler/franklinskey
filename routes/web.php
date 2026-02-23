@@ -18,24 +18,13 @@ Route::get('/landing', function () {
 });
 
 // Auth
-Route::get('/login', function () {
-    return redirect()->route('auth.google');
-})->name('login');
+Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
+Route::post('/login', [AuthController::class, 'login']);
+Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
+Route::post('/register', [AuthController::class, 'register']);
 Route::get('/auth/google', [AuthController::class, 'redirectToGoogle'])->name('auth.google');
 Route::get('/auth/google/callback', [AuthController::class, 'handleGoogleCallback']);
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
-
-// Dev auto-login (remove after Google OAuth is configured)
-if (app()->environment('local')) {
-    Route::get('/dev-login', function () {
-        $user = \App\Models\User::where('email', 'sschoeffler@gmail.com')->first();
-        if ($user) {
-            \Illuminate\Support\Facades\Auth::login($user, true);
-            return redirect('/dashboard');
-        }
-        return 'No stub user found. Run: php artisan db:seed';
-    });
-}
 
 // Authenticated routes
 Route::middleware('auth')->group(function () {
