@@ -276,28 +276,28 @@
                             </div>
                             <p class="text-xs text-gray-500 mt-0.5" x-text="'For: ' + item.builds.join(', ')"></p>
                         </div>
-                        <button @click="checkPrice(item)" :disabled="item.loading" class="text-xs px-2 py-1 rounded bg-white/[0.04] text-gray-400 hover:text-white hover:bg-white/[0.08] transition" x-show="!item.prices">
-                            <span x-show="!item.loading">Check</span>
-                            <span x-show="item.loading">...</span>
+                        <button @click="checkPrice(item)" :disabled="isPriceLoading(item)" class="text-xs px-2 py-1 rounded bg-white/[0.04] text-gray-400 hover:text-white hover:bg-white/[0.08] transition" x-show="!getPrices(item)">
+                            <span x-show="!isPriceLoading(item)">Check</span>
+                            <span x-show="isPriceLoading(item)">...</span>
                         </button>
                     </div>
 
                     <!-- Price results -->
-                    <div x-show="item.prices" class="mt-2 grid grid-cols-3 gap-2">
+                    <div x-show="getPrices(item)" class="mt-2 grid grid-cols-3 gap-2">
                         <template x-for="store in ['amazon', 'microcenter', 'ebay']" :key="store">
-                            <a :href="item.prices?.[store]?.url" target="_blank" class="block p-2 rounded-lg bg-white/[0.03] border border-white/[0.06] hover:border-amber-500/30 transition text-center">
+                            <a :href="getPrices(item)?.[store]?.url" target="_blank" class="block p-2 rounded-lg bg-white/[0.03] border border-white/[0.06] hover:border-amber-500/30 transition text-center">
                                 <div class="text-[0.65rem] uppercase tracking-wider mb-1" :class="{
                                     'text-orange-400': store === 'amazon',
                                     'text-blue-400': store === 'microcenter',
                                     'text-yellow-400': store === 'ebay'
                                 }" x-text="store === 'microcenter' ? 'Micro Center' : store.charAt(0).toUpperCase() + store.slice(1)"></div>
-                                <template x-if="item.prices?.[store]?.items?.length > 0">
+                                <template x-if="getPrices(item)?.[store]?.items?.length > 0">
                                     <div>
-                                        <div class="text-sm font-bold text-green-400" x-text="item.prices[store].items[0].price"></div>
-                                        <div class="text-[0.6rem] text-gray-500 truncate mt-0.5" x-text="item.prices[store].items[0].name" x-show="item.prices[store].items[0].name"></div>
+                                        <div class="text-sm font-bold text-green-400" x-text="getPrices(item)[store].items[0].price"></div>
+                                        <div class="text-[0.6rem] text-gray-500 truncate mt-0.5" x-text="getPrices(item)[store].items[0].name" x-show="getPrices(item)[store].items[0].name"></div>
                                     </div>
                                 </template>
-                                <template x-if="!item.prices?.[store]?.items?.length">
+                                <template x-if="!getPrices(item)?.[store]?.items?.length">
                                     <div class="text-xs text-gray-500">Search &rarr;</div>
                                 </template>
                             </a>
@@ -690,12 +690,15 @@ function dashboardApp() {
         },
 
         priceCheckLoading: false,
+        priceData: {},
+        priceLoading: {},
 
         async checkPrice(item) {
-            item.loading = true;
+            const key = item.name.toLowerCase();
+            this.priceLoading[key] = true;
             try {
                 const res = await this.api('/api/price-check?q=' + encodeURIComponent(item.name), 'GET');
-                item.prices = {
+                this.priceData[key] = {
                     amazon: res.amazon || { url: 'https://www.amazon.com/s?k=' + encodeURIComponent(item.name), items: [] },
                     microcenter: res.microcenter || { url: 'https://www.microcenter.com/search/search_results.aspx?Ntt=' + encodeURIComponent(item.name), items: [] },
                     ebay: res.ebay || { url: 'https://www.ebay.com/sch/i.html?_nkw=' + encodeURIComponent(item.name) + '&LH_BIN=1', items: [] },
@@ -703,23 +706,31 @@ function dashboardApp() {
             } catch (e) {
                 console.error('Price check failed:', e);
             }
-            item.loading = false;
+            this.priceLoading[key] = false;
+        },
+
+        getPrices(item) {
+            return this.priceData[item.name.toLowerCase()] || null;
+        },
+
+        isPriceLoading(item) {
+            return this.priceLoading[item.name.toLowerCase()] || false;
         },
 
         async autoPriceCheck() {
-            const unchecked = this.shoppingList.filter(i => !i.prices);
-            if (unchecked.length === 0) return;
+            const items = this.shoppingList.filter(i => !this.getPrices(i));
+            if (items.length === 0) return;
             this.priceCheckLoading = true;
 
             // Check first 2 immediately as a teaser
-            for (let i = 0; i < Math.min(2, unchecked.length); i++) {
-                await this.checkPrice(unchecked[i]);
+            for (let i = 0; i < Math.min(2, items.length); i++) {
+                await this.checkPrice(items[i]);
             }
 
             // Stagger the rest with 3-second delays to avoid hammering
-            for (let i = 2; i < unchecked.length; i++) {
+            for (let i = 2; i < items.length; i++) {
                 await new Promise(r => setTimeout(r, 3000));
-                await this.checkPrice(unchecked[i]);
+                await this.checkPrice(items[i]);
             }
 
             this.priceCheckLoading = false;
