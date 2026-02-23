@@ -250,6 +250,30 @@
         </div>
     </div>
 
+    <!-- ===== SHOPPING LIST ===== -->
+    <div class="mt-6 panel" x-show="shoppingList.length > 0">
+        <div class="panel-header">
+            <div>
+                <h2 class="text-xl font-bold text-white">Shopping List</h2>
+                <p class="text-sm text-gray-400 mt-0.5" x-text="shoppingList.length + ' item' + (shoppingList.length !== 1 ? 's' : '') + ' needed'"></p>
+            </div>
+        </div>
+        <div class="panel-body">
+            <template x-for="item in shoppingList" :key="item.name">
+                <div class="item-row">
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center gap-2">
+                            <span class="text-base text-white font-medium" x-text="item.name"></span>
+                            <span class="text-sm text-gray-500 font-mono" x-show="item.qty > 1" x-text="'x' + item.qty"></span>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-0.5" x-text="'For: ' + item.builds.join(', ')"></p>
+                    </div>
+                    <span class="text-xs px-2 py-0.5 rounded-full bg-red-500/10 text-red-400">Need</span>
+                </div>
+            </template>
+        </div>
+    </div>
+
     <!-- ===== ADD ITEM MODAL ===== -->
     <div x-show="showAddItemModal" x-transition.opacity class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4" @click.self="showAddItemModal = false">
         <div class="w-full max-w-md rounded-xl border border-white/10 bg-[#111827] p-6" @click.stop>
@@ -405,6 +429,40 @@ function dashboardApp() {
         get filteredInventory() {
             if (!this.inventoryFilter) return this.inventory;
             return this.inventory.filter(i => i.category === this.inventoryFilter);
+        },
+
+        matchesInventory(partName) {
+            const pn = partName.toLowerCase();
+            return this.inventory.some(item => {
+                const in_ = item.name.toLowerCase();
+                if (in_.includes(pn) || pn.includes(in_)) return true;
+                const words = pn.split(/[\s\-\/]+/);
+                let matched = 0;
+                for (const w of words) {
+                    const stem = w.replace(/s$/, '');
+                    if (stem && stem.length > 2 && in_.includes(stem)) matched++;
+                }
+                return words.length > 0 && matched === words.length;
+            });
+        },
+
+        get shoppingList() {
+            const needed = {};
+            for (const build of this.builds) {
+                for (const part of (build.parts || [])) {
+                    if (part.is_optional) continue;
+                    if (this.matchesInventory(part.name)) continue;
+                    const key = part.name.toLowerCase();
+                    if (!needed[key]) {
+                        needed[key] = { name: part.name, qty: 0, builds: [] };
+                    }
+                    needed[key].qty += part.quantity_needed || 1;
+                    if (!needed[key].builds.includes(build.name)) {
+                        needed[key].builds.push(build.name);
+                    }
+                }
+            }
+            return Object.values(needed).sort((a, b) => a.name.localeCompare(b.name));
         },
 
         get inventoryGrouped() {
