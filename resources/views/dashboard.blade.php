@@ -81,11 +81,16 @@
 <div class="max-w-6xl mx-auto px-4 sm:px-6 py-6" x-data="dashboardApp()">
 
     <!-- Header -->
-    <div class="mb-8">
-        <h1 class="text-3xl sm:text-4xl font-bold mb-2">
-            <span class="bg-gradient-to-r from-amber-400 to-yellow-300 bg-clip-text text-transparent">Workbench</span>
-        </h1>
-        <p class="text-gray-400">Your components and build projects.</p>
+    <div class="mb-8 flex items-start justify-between">
+        <div>
+            <h1 class="text-3xl sm:text-4xl font-bold mb-2">
+                <span class="bg-gradient-to-r from-amber-400 to-yellow-300 bg-clip-text text-transparent">Workbench</span>
+            </h1>
+            <p class="text-gray-400">Your components and build projects.</p>
+        </div>
+        <a href="/app" class="flex items-center gap-2 px-4 py-2.5 text-sm font-semibold bg-amber-500/15 text-amber-300 rounded-lg hover:bg-amber-500/25 transition mt-2">
+            &#x26A1; Circuit Assistant
+        </a>
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -98,6 +103,9 @@
                     <p class="text-sm text-gray-400 mt-0.5" x-text="inventory.length + ' item' + (inventory.length !== 1 ? 's' : '')"></p>
                 </div>
                 <div class="flex items-center gap-2">
+                    <button @click="mergeDuplicates()" class="px-3 py-2 text-sm font-semibold bg-white/5 text-gray-400 rounded-lg hover:bg-white/10 hover:text-gray-200 transition" title="Merge duplicate items">
+                        Merge
+                    </button>
                     <button @click="showScanModal = true" class="px-3 py-2 text-sm font-semibold bg-cyan-500/15 text-cyan-300 rounded-lg hover:bg-cyan-500/25 transition" title="Scan receipt or item photo">
                         &#x1F4F7; Scan
                     </button>
@@ -499,7 +507,15 @@ function dashboardApp() {
             try {
                 const res = await this.api('/api/inventory/bulk-add', 'POST', { items: selected });
                 if (res.success) {
-                    this.inventory.push(...res.items);
+                    // Replace inventory with merged results
+                    for (const item of res.items) {
+                        const idx = this.inventory.findIndex(i => i.id === item.id);
+                        if (idx >= 0) {
+                            this.inventory[idx] = item;
+                        } else {
+                            this.inventory.push(item);
+                        }
+                    }
                     this.inventory.sort((a, b) => a.name.localeCompare(b.name));
                     this.closeScanModal();
                     this.refreshBuilds();
@@ -512,6 +528,22 @@ function dashboardApp() {
             this.scanResults = null;
             this.scanError = '';
             this.scanning = false;
+        },
+
+        async mergeDuplicates() {
+            if (!confirm('Merge duplicate items? Quantities will be combined.')) return;
+            try {
+                const res = await this.api('/api/inventory/merge-duplicates', 'POST');
+                if (res.success) {
+                    this.inventory = res.items;
+                    this.refreshBuilds();
+                    if (res.merged > 0) {
+                        alert('Merged ' + res.merged + ' duplicate(s). You now have ' + res.items.length + ' unique items.');
+                    } else {
+                        alert('No duplicates found.');
+                    }
+                }
+            } catch (e) { alert('Failed to merge.'); }
         },
 
         async api(url, method, body) {

@@ -38,6 +38,7 @@ Route::middleware('auth')->group(function () {
     Route::delete('/api/inventory/{item}', [InventoryController::class, 'destroy']);
     Route::post('/api/inventory/scan', [InventoryController::class, 'scan']);
     Route::post('/api/inventory/bulk-add', [InventoryController::class, 'bulkAdd']);
+    Route::post('/api/inventory/merge-duplicates', [InventoryController::class, 'mergeDuplicates']);
 
     // Builds API
     Route::get('/api/builds', [BuildController::class, 'index']);

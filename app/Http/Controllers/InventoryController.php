@@ -162,16 +162,57 @@ class InventoryController extends Controller
             'items.*.quantity' => 'nullable|integer|min:1|max:9999',
         ]);
 
-        $created = [];
+        $existing = Auth::user()->inventoryItems()->get()->keyBy(fn($item) => strtolower(trim($item->name)));
+        $result = [];
+
         foreach ($request->items as $itemData) {
-            $created[] = Auth::user()->inventoryItems()->create([
-                'name' => $itemData['name'],
-                'description' => $itemData['description'] ?? null,
-                'category' => $itemData['category'] ?? 'misc',
-                'quantity' => $itemData['quantity'] ?? 1,
-            ]);
+            $key = strtolower(trim($itemData['name']));
+            $qty = $itemData['quantity'] ?? 1;
+
+            if ($existing->has($key)) {
+                $item = $existing->get($key);
+                $item->increment('quantity', $qty);
+                $item->refresh();
+                $result[] = $item;
+            } else {
+                $item = Auth::user()->inventoryItems()->create([
+                    'name' => $itemData['name'],
+                    'description' => $itemData['description'] ?? null,
+                    'category' => $itemData['category'] ?? 'misc',
+                    'quantity' => $qty,
+                ]);
+                $existing->put($key, $item);
+                $result[] = $item;
+            }
         }
 
-        return response()->json(['success' => true, 'items' => $created]);
+        return response()->json(['success' => true, 'items' => $result, 'merged' => true]);
+    }
+
+    public function mergeDuplicates()
+    {
+        $items = Auth::user()->inventoryItems()->orderBy('id')->get();
+        $seen = [];
+        $deleted = 0;
+
+        foreach ($items as $item) {
+            $key = strtolower(trim($item->name));
+
+            if (isset($seen[$key])) {
+                $seen[$key]->increment('quantity', $item->quantity);
+                $item->delete();
+                $deleted++;
+            } else {
+                $seen[$key] = $item;
+            }
+        }
+
+        $inventory = Auth::user()->inventoryItems()->orderBy('name')->get();
+
+        return response()->json([
+            'success' => true,
+            'merged' => $deleted,
+            'items' => $inventory,
+        ]);
     }
 }
