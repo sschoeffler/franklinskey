@@ -5,13 +5,13 @@
 @push('styles')
 <style>
     .panel {
-        background: rgba(255,255,255,0.02);
-        border: 1px solid rgba(255,255,255,0.06);
+        background: rgba(255,255,255,0.03);
+        border: 1px solid rgba(255,255,255,0.08);
         border-radius: 12px;
     }
     .panel-header {
         padding: 1.25rem 1.5rem;
-        border-bottom: 1px solid rgba(255,255,255,0.06);
+        border-bottom: 1px solid rgba(255,255,255,0.08);
         display: flex;
         align-items: center;
         justify-content: space-between;
@@ -23,38 +23,38 @@
         display: flex;
         align-items: center;
         justify-content: space-between;
-        padding: 0.625rem 0;
-        border-bottom: 1px solid rgba(255,255,255,0.04);
+        padding: 0.75rem 0;
+        border-bottom: 1px solid rgba(255,255,255,0.06);
     }
     .item-row:last-child { border-bottom: none; }
     .cat-badge {
         display: inline-block;
-        padding: 0.125rem 0.5rem;
+        padding: 0.2rem 0.6rem;
         border-radius: 9999px;
-        font-size: 0.7rem;
+        font-size: 0.75rem;
         font-weight: 600;
         text-transform: uppercase;
         letter-spacing: 0.05em;
-        background: rgba(245,158,11,0.1);
+        background: rgba(245,158,11,0.15);
         color: #fbbf24;
     }
-    .status-planning { color: #94a3b8; }
-    .status-in_progress { color: #38bdf8; }
-    .status-completed { color: #22c55e; }
+    .status-planning { color: #cbd5e1; }
+    .status-in_progress { color: #7dd3fc; }
+    .status-completed { color: #4ade80; }
     .readiness-bar {
-        height: 4px;
-        border-radius: 2px;
-        background: rgba(255,255,255,0.06);
+        height: 6px;
+        border-radius: 3px;
+        background: rgba(255,255,255,0.08);
         overflow: hidden;
     }
     .readiness-fill {
         height: 100%;
-        border-radius: 2px;
+        border-radius: 3px;
         background: linear-gradient(90deg, #f59e0b, #22c55e);
         transition: width 0.3s;
     }
     .scan-dropzone {
-        border: 2px dashed rgba(255,255,255,0.1);
+        border: 2px dashed rgba(255,255,255,0.15);
         border-radius: 12px;
         padding: 2rem;
         text-align: center;
@@ -69,10 +69,10 @@
         display: flex;
         align-items: center;
         justify-content: space-between;
-        padding: 0.5rem 0.75rem;
+        padding: 0.625rem 0.875rem;
         border-radius: 8px;
-        background: rgba(255,255,255,0.03);
-        border: 1px solid rgba(255,255,255,0.06);
+        background: rgba(255,255,255,0.04);
+        border: 1px solid rgba(255,255,255,0.08);
     }
 </style>
 @endpush
@@ -82,10 +82,10 @@
 
     <!-- Header -->
     <div class="mb-8">
-        <h1 class="text-2xl sm:text-3xl font-bold mb-1">
+        <h1 class="text-3xl sm:text-4xl font-bold mb-2">
             <span class="bg-gradient-to-r from-amber-400 to-yellow-300 bg-clip-text text-transparent">Workbench</span>
         </h1>
-        <p class="text-gray-500 text-sm">Your components and build projects.</p>
+        <p class="text-gray-400">Your components and build projects.</p>
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -94,32 +94,32 @@
         <div class="panel">
             <div class="panel-header">
                 <div>
-                    <h2 class="text-lg font-bold text-white">Inventory</h2>
-                    <p class="text-xs text-gray-500 mt-0.5" x-text="inventory.length + ' item' + (inventory.length !== 1 ? 's' : '')"></p>
+                    <h2 class="text-xl font-bold text-white">Inventory</h2>
+                    <p class="text-sm text-gray-400 mt-0.5" x-text="inventory.length + ' item' + (inventory.length !== 1 ? 's' : '')"></p>
                 </div>
                 <div class="flex items-center gap-2">
-                    <button @click="showScanModal = true" class="px-3 py-1.5 text-xs font-semibold bg-cyan-500/10 text-cyan-400 rounded-lg hover:bg-cyan-500/20 transition" title="Scan receipt or item photo">
+                    <button @click="showScanModal = true" class="px-3 py-2 text-sm font-semibold bg-cyan-500/15 text-cyan-300 rounded-lg hover:bg-cyan-500/25 transition" title="Scan receipt or item photo">
                         &#x1F4F7; Scan
                     </button>
-                    <button @click="showAddItemModal = true" class="px-3 py-1.5 text-xs font-semibold bg-amber-500/10 text-amber-400 rounded-lg hover:bg-amber-500/20 transition">
+                    <button @click="showAddItemModal = true" class="px-3 py-2 text-sm font-semibold bg-amber-500/15 text-amber-300 rounded-lg hover:bg-amber-500/25 transition">
                         + Add
                     </button>
                 </div>
             </div>
 
             <!-- Category filter -->
-            <div class="px-4 py-2 flex flex-wrap gap-1.5 border-b border-white/[0.04]">
-                <button @click="inventoryFilter = ''" :class="inventoryFilter === '' ? 'bg-amber-500/20 text-amber-400' : 'text-gray-500 hover:text-gray-300'" class="px-2.5 py-1 text-xs rounded-full transition">All</button>
+            <div class="px-4 py-2.5 flex flex-wrap gap-1.5 border-b border-white/[0.06]">
+                <button @click="inventoryFilter = ''" :class="inventoryFilter === '' ? 'bg-amber-500/20 text-amber-300' : 'text-gray-400 hover:text-gray-200'" class="px-3 py-1 text-sm rounded-full transition">All</button>
                 <template x-for="(label, key) in categories" :key="key">
-                    <button @click="inventoryFilter = key" :class="inventoryFilter === key ? 'bg-amber-500/20 text-amber-400' : 'text-gray-500 hover:text-gray-300'" class="px-2.5 py-1 text-xs rounded-full transition" x-text="label"></button>
+                    <button @click="inventoryFilter = key" :class="inventoryFilter === key ? 'bg-amber-500/20 text-amber-300' : 'text-gray-400 hover:text-gray-200'" class="px-3 py-1 text-sm rounded-full transition" x-text="label"></button>
                 </template>
             </div>
 
             <div class="panel-body max-h-[500px] overflow-y-auto">
                 <template x-if="filteredInventory.length === 0">
-                    <div class="text-center py-8 text-gray-500">
-                        <div class="text-3xl mb-2">&#x1F4E6;</div>
-                        <p class="text-sm">No items yet. Scan a receipt or add items manually.</p>
+                    <div class="text-center py-8 text-gray-400">
+                        <div class="text-4xl mb-3">&#x1F4E6;</div>
+                        <p>No items yet. Scan a receipt or add items manually.</p>
                     </div>
                 </template>
 
@@ -127,18 +127,18 @@
                     <div class="item-row group">
                         <div class="flex-1 min-w-0">
                             <div class="flex items-center gap-2">
-                                <span class="text-sm text-white font-medium truncate" x-text="item.name"></span>
+                                <span class="text-base text-white font-medium truncate" x-text="item.name"></span>
                                 <span class="cat-badge" x-text="categories[item.category] || item.category"></span>
                             </div>
-                            <p class="text-xs text-gray-500 mt-0.5 truncate" x-text="item.description" x-show="item.description"></p>
+                            <p class="text-sm text-gray-400 mt-0.5 truncate" x-text="item.description" x-show="item.description"></p>
                         </div>
                         <div class="flex items-center gap-3 ml-3">
                             <div class="flex items-center gap-1">
-                                <button @click="updateQuantity(item, -1)" class="w-6 h-6 flex items-center justify-center text-gray-500 hover:text-red-400 rounded transition text-xs">-</button>
-                                <span class="text-sm text-gray-300 w-6 text-center font-mono" x-text="item.quantity"></span>
-                                <button @click="updateQuantity(item, 1)" class="w-6 h-6 flex items-center justify-center text-gray-500 hover:text-green-400 rounded transition text-xs">+</button>
+                                <button @click="updateQuantity(item, -1)" class="w-7 h-7 flex items-center justify-center text-gray-400 hover:text-red-400 rounded transition text-base font-bold">-</button>
+                                <span class="text-base text-gray-200 w-7 text-center font-mono" x-text="item.quantity"></span>
+                                <button @click="updateQuantity(item, 1)" class="w-7 h-7 flex items-center justify-center text-gray-400 hover:text-green-400 rounded transition text-base font-bold">+</button>
                             </div>
-                            <button @click="deleteItem(item)" class="text-gray-600 hover:text-red-400 transition opacity-0 group-hover:opacity-100 text-xs">&times;</button>
+                            <button @click="deleteItem(item)" class="text-gray-500 hover:text-red-400 transition opacity-0 group-hover:opacity-100 text-lg">&times;</button>
                         </div>
                     </div>
                 </template>
@@ -149,30 +149,30 @@
         <div class="panel">
             <div class="panel-header">
                 <div>
-                    <h2 class="text-lg font-bold text-white">Build Projects</h2>
-                    <p class="text-xs text-gray-500 mt-0.5" x-text="builds.length + ' project' + (builds.length !== 1 ? 's' : '')"></p>
+                    <h2 class="text-xl font-bold text-white">Build Projects</h2>
+                    <p class="text-sm text-gray-400 mt-0.5" x-text="builds.length + ' project' + (builds.length !== 1 ? 's' : '')"></p>
                 </div>
-                <button @click="showAddBuildModal = true" class="px-3 py-1.5 text-xs font-semibold bg-amber-500/10 text-amber-400 rounded-lg hover:bg-amber-500/20 transition">
+                <button @click="showAddBuildModal = true" class="px-3 py-2 text-sm font-semibold bg-amber-500/15 text-amber-300 rounded-lg hover:bg-amber-500/25 transition">
                     + New Build
                 </button>
             </div>
 
             <div class="panel-body max-h-[500px] overflow-y-auto">
                 <template x-if="builds.length === 0">
-                    <div class="text-center py-8 text-gray-500">
-                        <div class="text-3xl mb-2">&#x1F527;</div>
-                        <p class="text-sm">No build projects yet.</p>
+                    <div class="text-center py-8 text-gray-400">
+                        <div class="text-4xl mb-3">&#x1F527;</div>
+                        <p>No build projects yet.</p>
                     </div>
                 </template>
 
                 <template x-for="build in builds" :key="build.id">
-                    <a :href="'/builds/' + build.slug" class="block mb-3 p-4 rounded-xl border border-white/[0.06] bg-white/[0.01] hover:border-amber-500/20 transition">
+                    <a :href="'/builds/' + build.slug" class="block mb-3 p-4 rounded-xl border border-white/[0.08] bg-white/[0.02] hover:border-amber-500/30 transition">
                         <div class="flex items-start justify-between mb-2">
                             <div class="min-w-0">
-                                <h3 class="text-sm font-bold text-white" x-text="build.name"></h3>
-                                <p class="text-xs text-gray-500 mt-0.5 line-clamp-2" x-text="build.description"></p>
+                                <h3 class="text-base font-bold text-white" x-text="build.name"></h3>
+                                <p class="text-sm text-gray-400 mt-1 line-clamp-2" x-text="build.description"></p>
                             </div>
-                            <span class="text-xs font-semibold ml-3 whitespace-nowrap"
+                            <span class="text-sm font-semibold ml-3 whitespace-nowrap"
                                 :class="{
                                     'status-planning': build.status === 'planning',
                                     'status-in_progress': build.status === 'in_progress',
@@ -182,10 +182,10 @@
                         </div>
 
                         <!-- Readiness bar -->
-                        <div class="mt-2" x-show="build.readiness_info">
-                            <div class="flex items-center justify-between mb-1">
-                                <span class="text-xs text-gray-500">Parts ready</span>
-                                <span class="text-xs font-mono" :class="build.readiness_info?.percent === 100 ? 'text-green-400' : 'text-amber-400'" x-text="(build.readiness_info?.ready || 0) + '/' + (build.readiness_info?.total || 0)"></span>
+                        <div class="mt-3" x-show="build.readiness_info">
+                            <div class="flex items-center justify-between mb-1.5">
+                                <span class="text-sm text-gray-400">Parts ready</span>
+                                <span class="text-sm font-mono" :class="build.readiness_info?.percent === 100 ? 'text-green-400' : 'text-amber-400'" x-text="(build.readiness_info?.ready || 0) + '/' + (build.readiness_info?.total || 0)"></span>
                             </div>
                             <div class="readiness-bar">
                                 <div class="readiness-fill" :style="'width: ' + (build.readiness_info?.percent || 0) + '%'"></div>
@@ -193,11 +193,11 @@
                         </div>
 
                         <!-- Parts preview -->
-                        <div class="mt-2 flex flex-wrap gap-1" x-show="build.parts && build.parts.length > 0">
+                        <div class="mt-3 flex flex-wrap gap-1.5" x-show="build.parts && build.parts.length > 0">
                             <template x-for="part in (build.parts || []).slice(0, 5)" :key="part.id">
-                                <span class="text-[0.65rem] px-1.5 py-0.5 rounded bg-white/[0.04] text-gray-500" x-text="part.name"></span>
+                                <span class="text-xs px-2 py-0.5 rounded bg-white/[0.06] text-gray-300" x-text="part.name"></span>
                             </template>
-                            <span x-show="build.parts && build.parts.length > 5" class="text-[0.65rem] px-1.5 py-0.5 rounded bg-white/[0.04] text-gray-500" x-text="'+' + (build.parts.length - 5) + ' more'"></span>
+                            <span x-show="build.parts && build.parts.length > 5" class="text-xs px-2 py-0.5 rounded bg-white/[0.06] text-gray-400" x-text="'+' + (build.parts.length - 5) + ' more'"></span>
                         </div>
                     </a>
                 </template>
@@ -208,35 +208,35 @@
     <!-- ===== ADD ITEM MODAL ===== -->
     <div x-show="showAddItemModal" x-transition.opacity class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4" @click.self="showAddItemModal = false">
         <div class="w-full max-w-md rounded-xl border border-white/10 bg-[#111827] p-6" @click.stop>
-            <h3 class="text-lg font-bold text-white mb-4">Add Inventory Item</h3>
+            <h3 class="text-xl font-bold text-white mb-4">Add Inventory Item</h3>
             <form @submit.prevent="addItem">
-                <div class="space-y-3">
+                <div class="space-y-4">
                     <div>
-                        <label class="block text-xs text-gray-400 mb-1">Name</label>
-                        <input type="text" x-model="newItem.name" required maxlength="200" class="w-full px-3 py-2 bg-white/[0.04] border border-white/[0.08] rounded-lg text-white text-sm focus:outline-none focus:border-amber-500/50" placeholder="e.g. ESP32-CAM Module">
+                        <label class="block text-sm text-gray-300 mb-1.5">Name</label>
+                        <input type="text" x-model="newItem.name" required maxlength="200" class="w-full px-4 py-3 bg-white/[0.05] border border-white/[0.1] rounded-lg text-white focus:outline-none focus:border-amber-500/50" placeholder="e.g. ESP32-CAM Module">
                     </div>
                     <div>
-                        <label class="block text-xs text-gray-400 mb-1">Description (optional)</label>
-                        <input type="text" x-model="newItem.description" maxlength="1000" class="w-full px-3 py-2 bg-white/[0.04] border border-white/[0.08] rounded-lg text-white text-sm focus:outline-none focus:border-amber-500/50" placeholder="Brief description">
+                        <label class="block text-sm text-gray-300 mb-1.5">Description (optional)</label>
+                        <input type="text" x-model="newItem.description" maxlength="1000" class="w-full px-4 py-3 bg-white/[0.05] border border-white/[0.1] rounded-lg text-white focus:outline-none focus:border-amber-500/50" placeholder="Brief description">
                     </div>
                     <div class="grid grid-cols-2 gap-3">
                         <div>
-                            <label class="block text-xs text-gray-400 mb-1">Category</label>
-                            <select x-model="newItem.category" class="w-full px-3 py-2 bg-white/[0.04] border border-white/[0.08] rounded-lg text-white text-sm focus:outline-none focus:border-amber-500/50 appearance-none">
+                            <label class="block text-sm text-gray-300 mb-1.5">Category</label>
+                            <select x-model="newItem.category" class="w-full px-4 py-3 bg-white/[0.05] border border-white/[0.1] rounded-lg text-white focus:outline-none focus:border-amber-500/50 appearance-none">
                                 <template x-for="(label, key) in categories" :key="key">
                                     <option :value="key" x-text="label"></option>
                                 </template>
                             </select>
                         </div>
                         <div>
-                            <label class="block text-xs text-gray-400 mb-1">Quantity</label>
-                            <input type="number" x-model.number="newItem.quantity" min="1" max="9999" class="w-full px-3 py-2 bg-white/[0.04] border border-white/[0.08] rounded-lg text-white text-sm focus:outline-none focus:border-amber-500/50">
+                            <label class="block text-sm text-gray-300 mb-1.5">Quantity</label>
+                            <input type="number" x-model.number="newItem.quantity" min="1" max="9999" class="w-full px-4 py-3 bg-white/[0.05] border border-white/[0.1] rounded-lg text-white focus:outline-none focus:border-amber-500/50">
                         </div>
                     </div>
                 </div>
-                <div class="flex justify-end gap-2 mt-5">
-                    <button type="button" @click="showAddItemModal = false" class="px-4 py-2 text-sm text-gray-400 hover:text-white transition">Cancel</button>
-                    <button type="submit" :disabled="!newItem.name.trim()" class="px-4 py-2 text-sm font-bold bg-amber-500 text-gray-900 rounded-lg hover:bg-amber-400 transition disabled:opacity-40">Add Item</button>
+                <div class="flex justify-end gap-2 mt-6">
+                    <button type="button" @click="showAddItemModal = false" class="px-5 py-2.5 text-sm text-gray-300 hover:text-white transition">Cancel</button>
+                    <button type="submit" :disabled="!newItem.name.trim()" class="px-5 py-2.5 text-sm font-bold bg-amber-500 text-gray-900 rounded-lg hover:bg-amber-400 transition disabled:opacity-40">Add Item</button>
                 </div>
             </form>
         </div>
@@ -245,21 +245,21 @@
     <!-- ===== ADD BUILD MODAL ===== -->
     <div x-show="showAddBuildModal" x-transition.opacity class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4" @click.self="showAddBuildModal = false">
         <div class="w-full max-w-md rounded-xl border border-white/10 bg-[#111827] p-6" @click.stop>
-            <h3 class="text-lg font-bold text-white mb-4">New Build Project</h3>
+            <h3 class="text-xl font-bold text-white mb-4">New Build Project</h3>
             <form @submit.prevent="addBuild">
-                <div class="space-y-3">
+                <div class="space-y-4">
                     <div>
-                        <label class="block text-xs text-gray-400 mb-1">Project Name</label>
-                        <input type="text" x-model="newBuild.name" required maxlength="200" class="w-full px-3 py-2 bg-white/[0.04] border border-white/[0.08] rounded-lg text-white text-sm focus:outline-none focus:border-amber-500/50" placeholder="e.g. Front Dashcam">
+                        <label class="block text-sm text-gray-300 mb-1.5">Project Name</label>
+                        <input type="text" x-model="newBuild.name" required maxlength="200" class="w-full px-4 py-3 bg-white/[0.05] border border-white/[0.1] rounded-lg text-white focus:outline-none focus:border-amber-500/50" placeholder="e.g. Front Dashcam">
                     </div>
                     <div>
-                        <label class="block text-xs text-gray-400 mb-1">Description (optional)</label>
-                        <textarea x-model="newBuild.description" maxlength="2000" rows="3" class="w-full px-3 py-2 bg-white/[0.04] border border-white/[0.08] rounded-lg text-white text-sm focus:outline-none focus:border-amber-500/50 resize-none" placeholder="What are you building?"></textarea>
+                        <label class="block text-sm text-gray-300 mb-1.5">Description (optional)</label>
+                        <textarea x-model="newBuild.description" maxlength="2000" rows="3" class="w-full px-4 py-3 bg-white/[0.05] border border-white/[0.1] rounded-lg text-white focus:outline-none focus:border-amber-500/50 resize-none" placeholder="What are you building?"></textarea>
                     </div>
                 </div>
-                <div class="flex justify-end gap-2 mt-5">
-                    <button type="button" @click="showAddBuildModal = false" class="px-4 py-2 text-sm text-gray-400 hover:text-white transition">Cancel</button>
-                    <button type="submit" :disabled="!newBuild.name.trim()" class="px-4 py-2 text-sm font-bold bg-amber-500 text-gray-900 rounded-lg hover:bg-amber-400 transition disabled:opacity-40">Create Build</button>
+                <div class="flex justify-end gap-2 mt-6">
+                    <button type="button" @click="showAddBuildModal = false" class="px-5 py-2.5 text-sm text-gray-300 hover:text-white transition">Cancel</button>
+                    <button type="submit" :disabled="!newBuild.name.trim()" class="px-5 py-2.5 text-sm font-bold bg-amber-500 text-gray-900 rounded-lg hover:bg-amber-400 transition disabled:opacity-40">Create Build</button>
                 </div>
             </form>
         </div>
@@ -268,27 +268,27 @@
     <!-- ===== SCAN MODAL ===== -->
     <div x-show="showScanModal" x-transition.opacity class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4" @click.self="closeScanModal()">
         <div class="w-full max-w-lg rounded-xl border border-white/10 bg-[#111827] p-6 max-h-[90vh] overflow-y-auto" @click.stop>
-            <h3 class="text-lg font-bold text-white mb-4">&#x1F4F7; Scan Items</h3>
+            <h3 class="text-xl font-bold text-white mb-4">&#x1F4F7; Scan Items</h3>
 
             <!-- Upload zone -->
             <div x-show="!scanResults">
-                <p class="text-sm text-gray-400 mb-4">Take a photo of your receipt or components and we'll identify them automatically.</p>
+                <p class="text-gray-300 mb-4">Take a photo of your receipt or components and we'll identify them automatically.</p>
 
                 <div class="flex gap-3 mb-4">
-                    <button @click="scanContext = 'receipt'" :class="scanContext === 'receipt' ? 'bg-amber-500/20 text-amber-400 border-amber-500/30' : 'border-white/[0.08] text-gray-400'" class="flex-1 px-3 py-2 text-sm rounded-lg border transition">Receipt</button>
-                    <button @click="scanContext = 'item'" :class="scanContext === 'item' ? 'bg-cyan-500/20 text-cyan-400 border-cyan-500/30' : 'border-white/[0.08] text-gray-400'" class="flex-1 px-3 py-2 text-sm rounded-lg border transition">Component Photo</button>
+                    <button @click="scanContext = 'receipt'" :class="scanContext === 'receipt' ? 'bg-amber-500/20 text-amber-300 border-amber-500/30' : 'border-white/[0.1] text-gray-300'" class="flex-1 px-4 py-2.5 rounded-lg border transition">Receipt</button>
+                    <button @click="scanContext = 'item'" :class="scanContext === 'item' ? 'bg-cyan-500/20 text-cyan-300 border-cyan-500/30' : 'border-white/[0.1] text-gray-300'" class="flex-1 px-4 py-2.5 rounded-lg border transition">Component Photo</button>
                 </div>
 
                 <input type="file" x-ref="scanInput" accept="image/jpeg,image/png,image/gif,image/webp" capture="environment" class="hidden" @change="handleScan">
 
                 <div class="scan-dropzone" @click="$refs.scanInput.click()" @dragover.prevent="$event.target.closest('.scan-dropzone').classList.add('dragover')" @dragleave="$event.target.closest('.scan-dropzone').classList.remove('dragover')" @drop.prevent="handleScanDrop($event)">
-                    <div class="text-3xl mb-2" x-text="scanContext === 'receipt' ? '&#x1F9FE;' : '&#x1F50D;'"></div>
-                    <p class="text-sm text-gray-400" x-text="scanContext === 'receipt' ? 'Drop receipt photo here or tap to take a photo' : 'Drop component photo here or tap to take a photo'"></p>
+                    <div class="text-4xl mb-2" x-text="scanContext === 'receipt' ? '&#x1F9FE;' : '&#x1F50D;'"></div>
+                    <p class="text-gray-300" x-text="scanContext === 'receipt' ? 'Drop receipt photo here or tap to take a photo' : 'Drop component photo here or tap to take a photo'"></p>
                 </div>
 
                 <div x-show="scanning" class="mt-4 text-center">
-                    <div class="inline-flex items-center gap-2 text-amber-400 text-sm">
-                        <svg class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+                    <div class="inline-flex items-center gap-2 text-amber-400">
+                        <svg class="animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
                         Analyzing image...
                     </div>
                 </div>
@@ -296,36 +296,36 @@
 
             <!-- Scan results -->
             <div x-show="scanResults">
-                <p class="text-sm text-gray-400 mb-3">Found <span class="text-amber-400 font-bold" x-text="scanResults?.length || 0"></span> items. Select which to add:</p>
+                <p class="text-gray-300 mb-3">Found <span class="text-amber-400 font-bold" x-text="scanResults?.length || 0"></span> items. Select which to add:</p>
 
                 <div class="space-y-2 mb-4 max-h-[300px] overflow-y-auto">
                     <template x-for="(item, idx) in scanResults || []" :key="idx">
                         <label class="scan-preview-item cursor-pointer">
                             <div class="flex items-center gap-2 flex-1 min-w-0">
-                                <input type="checkbox" :checked="item.selected" @change="item.selected = $event.target.checked" class="rounded border-gray-600 text-amber-500 focus:ring-amber-500/30">
+                                <input type="checkbox" :checked="item.selected" @change="item.selected = $event.target.checked" class="rounded border-gray-500 text-amber-500 focus:ring-amber-500/30">
                                 <div class="min-w-0">
-                                    <div class="text-sm text-white truncate" x-text="item.name"></div>
-                                    <div class="text-xs text-gray-500 truncate" x-text="item.description"></div>
+                                    <div class="text-base text-white truncate" x-text="item.name"></div>
+                                    <div class="text-sm text-gray-400 truncate" x-text="item.description"></div>
                                 </div>
                             </div>
                             <div class="flex items-center gap-2 ml-2">
                                 <span class="cat-badge" x-text="item.category"></span>
-                                <span class="text-xs text-gray-400 font-mono" x-text="'x' + item.quantity"></span>
+                                <span class="text-sm text-gray-300 font-mono" x-text="'x' + item.quantity"></span>
                             </div>
                         </label>
                     </template>
                 </div>
 
                 <div class="flex justify-between">
-                    <button @click="scanResults = null" class="px-4 py-2 text-sm text-gray-400 hover:text-white transition">Scan Another</button>
+                    <button @click="scanResults = null" class="px-4 py-2.5 text-sm text-gray-300 hover:text-white transition">Scan Another</button>
                     <div class="flex gap-2">
-                        <button @click="closeScanModal()" class="px-4 py-2 text-sm text-gray-400 hover:text-white transition">Cancel</button>
-                        <button @click="addScannedItems()" class="px-4 py-2 text-sm font-bold bg-amber-500 text-gray-900 rounded-lg hover:bg-amber-400 transition">Add Selected</button>
+                        <button @click="closeScanModal()" class="px-4 py-2.5 text-sm text-gray-300 hover:text-white transition">Cancel</button>
+                        <button @click="addScannedItems()" class="px-5 py-2.5 text-sm font-bold bg-amber-500 text-gray-900 rounded-lg hover:bg-amber-400 transition">Add Selected</button>
                     </div>
                 </div>
             </div>
 
-            <div x-show="scanError" class="mt-3 text-sm text-red-400" x-text="scanError"></div>
+            <div x-show="scanError" class="mt-3 text-red-400" x-text="scanError"></div>
         </div>
     </div>
 
