@@ -88,19 +88,21 @@ class PriceCheckController extends Controller
             $html = $response->body();
             $items = [];
 
-            // Amazon: extract dollar amounts from rendered HTML
-            // Look for price patterns like $5.36 or $12.99
+            // Amazon: extract dollar amounts from rendered HTML, collect and sort by price
             if (preg_match_all('/\$(\d{1,3})\.(\d{2})/', $html, $priceMatches, PREG_SET_ORDER)) {
                 $seen = [];
+                $all = [];
                 foreach ($priceMatches as $match) {
                     $price = $match[1] . '.' . $match[2];
                     $pf = (float) $price;
-                    // Filter out shipping costs, very small amounts, and duplicates
-                    if ($pf >= 1.00 && $pf <= 500 && !isset($seen[$price])) {
+                    if ($pf >= 1.00 && $pf <= 200 && !isset($seen[$price])) {
                         $seen[$price] = true;
-                        $items[] = ['name' => '', 'price' => '$' . $price];
-                        if (count($items) >= 3) break;
+                        $all[] = $pf;
                     }
+                }
+                sort($all);
+                foreach (array_slice($all, 0, 3) as $p) {
+                    $items[] = ['name' => '', 'price' => '$' . number_format($p, 2)];
                 }
             }
 
