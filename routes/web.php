@@ -5,6 +5,7 @@ use App\Http\Controllers\BuildController;
 use App\Http\Controllers\ChatController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\InventoryController;
+use App\Http\Controllers\PriceCheckController;
 use App\Http\Controllers\ProjectController;
 use Illuminate\Support\Facades\Route;
 
@@ -50,6 +51,9 @@ Route::middleware('auth')->group(function () {
 
     // Build detail page
     Route::get('/builds/{build:slug}', [BuildController::class, 'show'])->name('build.show');
+
+    // Price check
+    Route::get('/api/price-check', [PriceCheckController::class, 'search']);
 });
 
 // Circuit assistant (session-based, works with or without auth)

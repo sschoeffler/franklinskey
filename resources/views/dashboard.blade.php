@@ -257,18 +257,52 @@
                 <h2 class="text-xl font-bold text-white">Shopping List</h2>
                 <p class="text-sm text-gray-400 mt-0.5" x-text="shoppingList.length + ' item' + (shoppingList.length !== 1 ? 's' : '') + ' needed'"></p>
             </div>
+            <button @click="checkAllPrices()" :disabled="priceCheckLoading" class="px-3 py-2 text-sm font-semibold bg-green-500/15 text-green-300 rounded-lg hover:bg-green-500/25 transition disabled:opacity-40">
+                <span x-show="!priceCheckLoading">Compare Prices</span>
+                <span x-show="priceCheckLoading" class="flex items-center gap-2">
+                    <svg class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+                    Checking...
+                </span>
+            </button>
         </div>
         <div class="panel-body">
             <template x-for="item in shoppingList" :key="item.name">
-                <div class="item-row">
-                    <div class="flex-1 min-w-0">
-                        <div class="flex items-center gap-2">
-                            <span class="text-base text-white font-medium" x-text="item.name"></span>
-                            <span class="text-sm text-gray-500 font-mono" x-show="item.qty > 1" x-text="'x' + item.qty"></span>
+                <div class="py-3 border-b border-white/[0.06] last:border-0">
+                    <div class="flex items-center justify-between">
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center gap-2">
+                                <span class="text-base text-white font-medium" x-text="item.name"></span>
+                                <span class="text-sm text-gray-500 font-mono" x-show="item.qty > 1" x-text="'x' + item.qty"></span>
+                            </div>
+                            <p class="text-xs text-gray-500 mt-0.5" x-text="'For: ' + item.builds.join(', ')"></p>
                         </div>
-                        <p class="text-xs text-gray-500 mt-0.5" x-text="'For: ' + item.builds.join(', ')"></p>
+                        <button @click="checkPrice(item)" :disabled="item.loading" class="text-xs px-2 py-1 rounded bg-white/[0.04] text-gray-400 hover:text-white hover:bg-white/[0.08] transition" x-show="!item.prices">
+                            <span x-show="!item.loading">Check</span>
+                            <span x-show="item.loading">...</span>
+                        </button>
                     </div>
-                    <span class="text-xs px-2 py-0.5 rounded-full bg-red-500/10 text-red-400">Need</span>
+
+                    <!-- Price results -->
+                    <div x-show="item.prices" class="mt-2 grid grid-cols-3 gap-2">
+                        <template x-for="store in ['amazon', 'microcenter', 'ebay']" :key="store">
+                            <a :href="item.prices?.[store]?.url" target="_blank" class="block p-2 rounded-lg bg-white/[0.03] border border-white/[0.06] hover:border-amber-500/30 transition text-center">
+                                <div class="text-[0.65rem] uppercase tracking-wider mb-1" :class="{
+                                    'text-orange-400': store === 'amazon',
+                                    'text-blue-400': store === 'microcenter',
+                                    'text-yellow-400': store === 'ebay'
+                                }" x-text="store === 'microcenter' ? 'Micro Center' : store.charAt(0).toUpperCase() + store.slice(1)"></div>
+                                <template x-if="item.prices?.[store]?.items?.length > 0">
+                                    <div>
+                                        <div class="text-sm font-bold text-green-400" x-text="item.prices[store].items[0].price"></div>
+                                        <div class="text-[0.6rem] text-gray-500 truncate mt-0.5" x-text="item.prices[store].items[0].name" x-show="item.prices[store].items[0].name"></div>
+                                    </div>
+                                </template>
+                                <template x-if="!item.prices?.[store]?.items?.length">
+                                    <div class="text-xs text-gray-500">Search &rarr;</div>
+                                </template>
+                            </a>
+                        </template>
+                    </div>
                 </div>
             </template>
         </div>
@@ -653,6 +687,33 @@ function dashboardApp() {
             this.scanError = '';
             this.scanning = false;
             this.scanImageUrl = '';
+        },
+
+        priceCheckLoading: false,
+
+        async checkPrice(item) {
+            item.loading = true;
+            try {
+                const res = await this.api('/api/price-check?q=' + encodeURIComponent(item.name), 'GET');
+                item.prices = {
+                    amazon: res.amazon || { url: 'https://www.amazon.com/s?k=' + encodeURIComponent(item.name), items: [] },
+                    microcenter: res.microcenter || { url: 'https://www.microcenter.com/search/search_results.aspx?Ntt=' + encodeURIComponent(item.name), items: [] },
+                    ebay: res.ebay || { url: 'https://www.ebay.com/sch/i.html?_nkw=' + encodeURIComponent(item.name) + '&LH_BIN=1', items: [] },
+                };
+            } catch (e) {
+                console.error('Price check failed:', e);
+            }
+            item.loading = false;
+        },
+
+        async checkAllPrices() {
+            this.priceCheckLoading = true;
+            for (const item of this.shoppingList) {
+                if (!item.prices) {
+                    await this.checkPrice(item);
+                }
+            }
+            this.priceCheckLoading = false;
         },
 
         async mergeDuplicates() {
