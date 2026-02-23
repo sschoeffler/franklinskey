@@ -198,6 +198,7 @@ RULES;
     public function chat(Project $project, string $message, ?string $imagePath = null, ?string $imageMime = null, ?User $user = null): string
     {
         $systemPrompt = $this->getSystemPrompt($project, $user);
+        $systemPrompt .= BraveSearch::searchAndFormat($message);
         $messages = $this->buildMessagesArray($project, $message, $imagePath, $imageMime);
 
         try {

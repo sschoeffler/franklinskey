@@ -41,4 +41,8 @@ return [
         'redirect' => env('GOOGLE_REDIRECT_URI', '/auth/google/callback'),
     ],
 
+    'brave' => [
+        'api_key' => env('BRAVE_API_KEY'),
+    ],
+
 ];
