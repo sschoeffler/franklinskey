@@ -115,12 +115,11 @@
                 </div>
             </div>
 
-            <!-- Category filter -->
-            <div class="px-4 py-2.5 flex flex-wrap gap-1.5 border-b border-white/[0.06]">
-                <button @click="inventoryFilter = ''" :class="inventoryFilter === '' ? 'bg-amber-500/20 text-amber-300' : 'text-gray-400 hover:text-gray-200'" class="px-3 py-1 text-sm rounded-full transition">All</button>
-                <template x-for="(label, key) in categories" :key="key">
-                    <button @click="inventoryFilter = key" :class="inventoryFilter === key ? 'bg-amber-500/20 text-amber-300' : 'text-gray-400 hover:text-gray-200'" class="px-3 py-1 text-sm rounded-full transition" x-text="label"></button>
-                </template>
+            <!-- Filter bar -->
+            <div class="px-4 py-2.5 flex flex-wrap items-center gap-1.5 border-b border-white/[0.06]">
+                <button @click="groupBy = ''; inventoryFilter = ''" :class="groupBy === '' && inventoryFilter === '' ? 'bg-amber-500/20 text-amber-300' : 'text-gray-400 hover:text-gray-200'" class="px-3 py-1 text-sm rounded-full transition">All</button>
+                <button @click="groupBy = 'type'; inventoryFilter = ''" :class="groupBy === 'type' ? 'bg-amber-500/20 text-amber-300' : 'text-gray-400 hover:text-gray-200'" class="px-3 py-1 text-sm rounded-full transition">By Type</button>
+                <button @click="groupBy = 'source'; inventoryFilter = ''" :class="groupBy === 'source' ? 'bg-cyan-500/20 text-cyan-300' : 'text-gray-400 hover:text-gray-200'" class="px-3 py-1 text-sm rounded-full transition">By Source</button>
             </div>
 
             <div class="panel-body max-h-[500px] overflow-y-auto">
@@ -131,23 +130,61 @@
                     </div>
                 </template>
 
-                <template x-for="item in filteredInventory" :key="item.id">
-                    <div class="item-row group">
-                        <div class="flex-1 min-w-0">
-                            <div class="flex items-center gap-2">
-                                <span class="text-base text-white font-medium truncate" x-text="item.name"></span>
-                                <span class="cat-badge" x-text="categories[item.category] || item.category"></span>
+                <!-- Grouped view (by source or type) -->
+                <template x-if="groupBy && filteredInventory.length > 0">
+                    <div>
+                        <template x-for="group in inventoryGrouped" :key="group.label">
+                            <div class="mb-4">
+                                <div class="flex items-center gap-2 mb-2 pb-1.5 border-b border-white/[0.06]">
+                                    <span class="text-sm font-semibold" :class="groupBy === 'source' ? 'text-cyan-300' : 'text-amber-300'" x-text="group.label"></span>
+                                    <span class="text-xs text-gray-500" x-text="group.items.length + ' item' + (group.items.length !== 1 ? 's' : '')"></span>
+                                </div>
+                                <template x-for="item in group.items" :key="item.id">
+                                    <div class="item-row group">
+                                        <div class="flex-1 min-w-0">
+                                            <div class="flex items-center gap-2">
+                                                <span class="text-base text-white font-medium truncate" x-text="item.name"></span>
+                                                <span class="cat-badge" x-text="categories[item.category] || item.category"></span>
+                                            </div>
+                                            <p class="text-sm text-gray-400 mt-0.5 truncate" x-text="item.description" x-show="item.description"></p>
+                                        </div>
+                                        <div class="flex items-center gap-3 ml-3">
+                                            <div class="flex items-center gap-1">
+                                                <button @click="updateQuantity(item, -1)" class="w-7 h-7 flex items-center justify-center text-gray-400 hover:text-red-400 rounded transition text-base font-bold">-</button>
+                                                <span class="text-base text-gray-200 w-7 text-center font-mono" x-text="item.quantity"></span>
+                                                <button @click="updateQuantity(item, 1)" class="w-7 h-7 flex items-center justify-center text-gray-400 hover:text-green-400 rounded transition text-base font-bold">+</button>
+                                            </div>
+                                            <button @click="deleteItem(item)" class="text-gray-500 hover:text-red-400 transition opacity-0 group-hover:opacity-100 text-lg">&times;</button>
+                                        </div>
+                                    </div>
+                                </template>
                             </div>
-                            <p class="text-sm text-gray-400 mt-0.5 truncate" x-text="item.description" x-show="item.description"></p>
-                        </div>
-                        <div class="flex items-center gap-3 ml-3">
-                            <div class="flex items-center gap-1">
-                                <button @click="updateQuantity(item, -1)" class="w-7 h-7 flex items-center justify-center text-gray-400 hover:text-red-400 rounded transition text-base font-bold">-</button>
-                                <span class="text-base text-gray-200 w-7 text-center font-mono" x-text="item.quantity"></span>
-                                <button @click="updateQuantity(item, 1)" class="w-7 h-7 flex items-center justify-center text-gray-400 hover:text-green-400 rounded transition text-base font-bold">+</button>
+                        </template>
+                    </div>
+                </template>
+
+                <!-- Flat list view -->
+                <template x-if="!groupBy">
+                    <div>
+                        <template x-for="item in filteredInventory" :key="item.id">
+                            <div class="item-row group">
+                                <div class="flex-1 min-w-0">
+                                    <div class="flex items-center gap-2">
+                                        <span class="text-base text-white font-medium truncate" x-text="item.name"></span>
+                                        <span class="cat-badge" x-text="categories[item.category] || item.category"></span>
+                                    </div>
+                                    <p class="text-sm text-gray-400 mt-0.5 truncate" x-text="item.description" x-show="item.description"></p>
+                                </div>
+                                <div class="flex items-center gap-3 ml-3">
+                                    <div class="flex items-center gap-1">
+                                        <button @click="updateQuantity(item, -1)" class="w-7 h-7 flex items-center justify-center text-gray-400 hover:text-red-400 rounded transition text-base font-bold">-</button>
+                                        <span class="text-base text-gray-200 w-7 text-center font-mono" x-text="item.quantity"></span>
+                                        <button @click="updateQuantity(item, 1)" class="w-7 h-7 flex items-center justify-center text-gray-400 hover:text-green-400 rounded transition text-base font-bold">+</button>
+                                    </div>
+                                    <button @click="deleteItem(item)" class="text-gray-500 hover:text-red-400 transition opacity-0 group-hover:opacity-100 text-lg">&times;</button>
+                                </div>
                             </div>
-                            <button @click="deleteItem(item)" class="text-gray-500 hover:text-red-400 transition opacity-0 group-hover:opacity-100 text-lg">&times;</button>
-                        </div>
+                        </template>
                     </div>
                 </template>
             </div>
@@ -287,6 +324,10 @@
                     <button @click="scanContext = 'item'" :class="scanContext === 'item' ? 'bg-cyan-500/20 text-cyan-300 border-cyan-500/30' : 'border-white/[0.1] text-gray-300'" class="flex-1 px-4 py-2.5 rounded-lg border transition">Component Photo</button>
                 </div>
 
+                <div class="mb-4">
+                    <input type="text" x-model="scanSource" maxlength="200" class="w-full px-3 py-2 bg-white/[0.04] border border-white/[0.08] rounded-lg text-white text-sm focus:outline-none focus:border-amber-500/50" placeholder="Source label (e.g. Micro Center, Arduino Kit, Radio Shack Kit)">
+                </div>
+
                 <input type="file" x-ref="scanInput" accept="image/jpeg,image/png,image/gif,image/webp" capture="environment" class="hidden" @change="handleScan">
 
                 <div class="scan-dropzone" @click="$refs.scanInput.click()" @dragover.prevent="$event.target.closest('.scan-dropzone').classList.add('dragover')" @dragleave="$event.target.closest('.scan-dropzone').classList.remove('dragover')" @drop.prevent="handleScanDrop($event)">
@@ -348,11 +389,14 @@ function dashboardApp() {
         builds: @json($builds->map(fn($b) => array_merge($b->toArray(), ['readiness_info' => $b->readiness]))),
         categories: @json($categories),
         inventoryFilter: '',
+        groupBy: '',
         showAddItemModal: false,
         showAddBuildModal: false,
         showScanModal: false,
         scanning: false,
         scanContext: 'receipt',
+        scanSource: '',
+        scanImageUrl: '',
         scanResults: null,
         scanError: '',
         newItem: { name: '', description: '', category: 'misc', quantity: 1 },
@@ -361,6 +405,23 @@ function dashboardApp() {
         get filteredInventory() {
             if (!this.inventoryFilter) return this.inventory;
             return this.inventory.filter(i => i.category === this.inventoryFilter);
+        },
+
+        get inventoryGrouped() {
+            const groups = {};
+            const labelFn = this.groupBy === 'source'
+                ? (item) => item.source || 'Unsorted'
+                : (item) => this.categories[item.category] || item.category || 'Miscellaneous';
+
+            for (const item of this.inventory) {
+                const key = labelFn(item);
+                if (!groups[key]) groups[key] = [];
+                groups[key].push(item);
+            }
+            return Object.keys(groups).sort().map(label => ({
+                label,
+                items: groups[label].sort((a, b) => a.name.localeCompare(b.name)),
+            }));
         },
 
         async addItem() {
@@ -464,6 +525,7 @@ function dashboardApp() {
                     const data = await res.json();
                     if (data.success && data.items) {
                         this.scanResults = data.items.map(i => ({ ...i, selected: true }));
+                        this.scanImageUrl = data.image_url || '';
                     } else {
                         this.scanError = data.error || 'Could not identify items.';
                     }
@@ -505,7 +567,11 @@ function dashboardApp() {
             if (selected.length === 0) return;
 
             try {
-                const res = await this.api('/api/inventory/bulk-add', 'POST', { items: selected });
+                const res = await this.api('/api/inventory/bulk-add', 'POST', {
+                    items: selected,
+                    source: this.scanSource || null,
+                    scan_image: this.scanImageUrl || null,
+                });
                 if (res.success) {
                     // Replace inventory with merged results
                     for (const item of res.items) {
@@ -528,6 +594,7 @@ function dashboardApp() {
             this.scanResults = null;
             this.scanError = '';
             this.scanning = false;
+            this.scanImageUrl = '';
         },
 
         async mergeDuplicates() {

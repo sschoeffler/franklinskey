@@ -160,7 +160,12 @@ class InventoryController extends Controller
             'items.*.description' => 'nullable|string|max:1000',
             'items.*.category' => 'nullable|string|max:50',
             'items.*.quantity' => 'nullable|integer|min:1|max:9999',
+            'source' => 'nullable|string|max:200',
+            'scan_image' => 'nullable|string|max:500',
         ]);
+
+        $source = $request->input('source');
+        $scanImage = $request->input('scan_image');
 
         $existing = Auth::user()->inventoryItems()->get()->keyBy(fn($item) => strtolower(trim($item->name)));
         $result = [];
@@ -172,6 +177,9 @@ class InventoryController extends Controller
             if ($existing->has($key)) {
                 $item = $existing->get($key);
                 $item->increment('quantity', $qty);
+                if ($source && !$item->source) {
+                    $item->update(['source' => $source]);
+                }
                 $item->refresh();
                 $result[] = $item;
             } else {
@@ -180,6 +188,8 @@ class InventoryController extends Controller
                     'description' => $itemData['description'] ?? null,
                     'category' => $itemData['category'] ?? 'misc',
                     'quantity' => $qty,
+                    'source' => $source,
+                    'scan_image' => $scanImage,
                 ]);
                 $existing->put($key, $item);
                 $result[] = $item;

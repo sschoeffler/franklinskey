@@ -9,6 +9,7 @@ class InventoryItem extends Model
 {
     protected $fillable = [
         'user_id', 'name', 'description', 'category', 'quantity', 'image_path', 'notes',
+        'source', 'scan_image',
     ];
 
     public function user(): BelongsTo
