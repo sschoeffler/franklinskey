@@ -88,9 +88,17 @@ function formatResponse($text) {
         <div class="msg-assistant rounded-lg px-4 py-3">
             <div class="text-xs font-semibold text-amber-400 mb-1.5">Franklin's Key</div>
             <div class="text-sm text-gray-300 leading-relaxed">
-                Hey! I'm Franklin's Key — your circuit-building assistant. &#x26A1;<br><br>
-                Tell me what you want to build with <strong>{{ $project->board_type ?? 'your board' }}</strong> and I'll walk you through the wiring step by step. You can also snap a photo of your parts and I'll help identify them.<br><br>
-                What would you like to build?
+                @if(str_contains(strtolower($project->name), 'build'))
+                    Hey! I'm Franklin's Key &#x26A1;<br><br>
+                    I'm ready to help you with <strong>{{ $project->name }}</strong>.
+                    @if($project->board_type) I see you're using a <strong>{{ $project->board_type }}</strong>. @endif
+                    I can look up specs, check your parts list, and walk you through the wiring step by step.<br><br>
+                    What do you need help with first?
+                @else
+                    Hey! I'm Franklin's Key — your circuit-building assistant. &#x26A1;<br><br>
+                    Tell me what you want to build with <strong>{{ $project->board_type ?? 'your board' }}</strong> and I'll walk you through the wiring step by step. You can also snap a photo of your parts and I'll help identify them.<br><br>
+                    What would you like to build?
+                @endif
             </div>
         </div>
 
