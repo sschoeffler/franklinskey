@@ -423,19 +423,18 @@ function dashboardApp() {
         },
 
         async doScan(file) {
-            if (file.size > 10 * 1024 * 1024) {
-                this.scanError = 'Image must be under 10MB.';
-                return;
-            }
             this.scanning = true;
             this.scanError = '';
             this.scanResults = null;
 
-            const formData = new FormData();
-            formData.append('image', file);
-            formData.append('context', this.scanContext);
-
             try {
+                // Resize large images client-side before uploading
+                const resized = await this.resizeImage(file, 1600);
+
+                const formData = new FormData();
+                formData.append('image', resized);
+                formData.append('context', this.scanContext);
+
                 const res = await fetch('/api/inventory/scan', {
                     method: 'POST',
                     headers: {
@@ -445,18 +444,52 @@ function dashboardApp() {
                     body: formData,
                 });
 
-                const data = await res.json();
-                if (data.success && data.items) {
-                    this.scanResults = data.items.map(i => ({ ...i, selected: true }));
+                if (!res.ok) {
+                    const text = await res.text();
+                    try {
+                        const data = JSON.parse(text);
+                        this.scanError = data.error || data.message || 'Server error (' + res.status + ')';
+                    } catch {
+                        this.scanError = 'Server error (' + res.status + '). Try a smaller image.';
+                    }
                 } else {
-                    this.scanError = data.error || 'Could not identify items.';
+                    const data = await res.json();
+                    if (data.success && data.items) {
+                        this.scanResults = data.items.map(i => ({ ...i, selected: true }));
+                    } else {
+                        this.scanError = data.error || 'Could not identify items.';
+                    }
                 }
             } catch (e) {
+                console.error('Scan error:', e);
                 this.scanError = 'Network error. Please try again.';
             }
 
             this.scanning = false;
             if (this.$refs.scanInput) this.$refs.scanInput.value = '';
+        },
+
+        resizeImage(file, maxDim) {
+            return new Promise((resolve) => {
+                if (file.size <= 1.5 * 1024 * 1024) { resolve(file); return; }
+                const img = new Image();
+                img.onload = () => {
+                    let w = img.width, h = img.height;
+                    if (w > maxDim || h > maxDim) {
+                        const ratio = Math.min(maxDim / w, maxDim / h);
+                        w = Math.round(w * ratio);
+                        h = Math.round(h * ratio);
+                    }
+                    const canvas = document.createElement('canvas');
+                    canvas.width = w; canvas.height = h;
+                    canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+                    canvas.toBlob((blob) => {
+                        resolve(new File([blob], file.name.replace(/\.\w+$/, '.jpg'), { type: 'image/jpeg' }));
+                    }, 'image/jpeg', 0.85);
+                };
+                img.onerror = () => resolve(file);
+                img.src = URL.createObjectURL(file);
+            });
         },
 
         async addScannedItems() {
