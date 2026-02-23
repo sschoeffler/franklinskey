@@ -89,11 +89,11 @@ class BraveSearch
             return '';
         }
 
-        $text = "\n\nWEB SEARCH RESULTS (for reference):\n";
+        $text = "\n\n--- LIVE WEB SEARCH RESULTS (fetched just now from the internet for this message) ---\n";
         foreach ($results as $r) {
             $text .= "- {$r['title']}: {$r['description']}\n  Source: {$r['url']}\n";
         }
-        $text .= "\nUse these search results to provide accurate, current information when relevant. Cite sources when helpful.\n";
+        $text .= "--- END SEARCH RESULTS ---\n";
 
         return $text;
     }
