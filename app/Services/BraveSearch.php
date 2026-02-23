@@ -77,13 +77,22 @@ class BraveSearch
         }
     }
 
+    public static function cleanQuery(string $message): string
+    {
+        // Strip conversational fluff and meta-references to search/API
+        $query = preg_replace('/\b(can you|could you|please|hey|hi|look up|search for|find out|find me|using brave|brave search|api|use the internet|use your|go online)\b/i', '', $message);
+        $query = preg_replace('/\s+/', ' ', trim($query));
+        return $query ?: $message;
+    }
+
     public static function searchAndFormat(string $message, int $maxResults = 3): string
     {
         if (!self::needsSearch($message)) {
             return '';
         }
 
-        $results = self::search($message, $maxResults);
+        $query = self::cleanQuery($message);
+        $results = self::search($query, $maxResults);
 
         if (!$results || empty($results)) {
             return '';
