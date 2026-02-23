@@ -87,13 +87,22 @@ function formatResponse($text) {
         <!-- Welcome message -->
         <div class="msg-assistant rounded-lg px-4 py-3">
             <div class="text-xs font-semibold text-amber-400 mb-1.5">Franklin's Key</div>
+            @php
+                // Extract build name from auto-generated project names
+                $buildName = null;
+                if (preg_match('/^Help with my (.+?) build\b/i', $project->name, $m)) {
+                    $buildName = $m[1];
+                } elseif (preg_match('/^Build guide for (.+?) —/i', $project->name, $m)) {
+                    $buildName = $m[1];
+                }
+            @endphp
             <div class="text-sm text-gray-300 leading-relaxed">
-                @if(str_contains(strtolower($project->name), 'build'))
+                @if($buildName)
                     Hey! I'm Franklin's Key &#x26A1;<br><br>
-                    I'm ready to help you with <strong>{{ $project->name }}</strong>.
+                    Let's get your <strong>{{ $buildName }}</strong> build wired up!
                     @if($project->board_type) I see you're using a <strong>{{ $project->board_type }}</strong>. @endif
-                    I can look up specs, check your parts list, and walk you through the wiring step by step.<br><br>
-                    What do you need help with first?
+                    I've got your parts list and inventory loaded — I can look up specs, check what you need, and walk you through step by step.<br><br>
+                    Where would you like to start?
                 @else
                     Hey! I'm Franklin's Key — your circuit-building assistant. &#x26A1;<br><br>
                     Tell me what you want to build with <strong>{{ $project->board_type ?? 'your board' }}</strong> and I'll walk you through the wiring step by step. You can also snap a photo of your parts and I'll help identify them.<br><br>
