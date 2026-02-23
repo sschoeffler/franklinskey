@@ -37,8 +37,24 @@ class Build extends Model
 
         foreach ($parts->where('is_optional', false) as $part) {
             $match = $inventory->first(function ($item) use ($part) {
-                return stripos($item->name, $part->name) !== false
-                    || stripos($part->name, $item->name) !== false;
+                $itemName = strtolower($item->name);
+                $partName = strtolower($part->name);
+
+                if (str_contains($itemName, $partName) || str_contains($partName, $itemName)) {
+                    return true;
+                }
+
+                // Check individual words (handles "Jumper Wires" matching "Jumper Wire 20cm Package")
+                $partWords = preg_split('/[\s\-\/]+/', $partName);
+                $matched = 0;
+                foreach ($partWords as $word) {
+                    $word = rtrim($word, 's'); // strip plural
+                    if ($word && strlen($word) > 2 && str_contains($itemName, $word)) {
+                        $matched++;
+                    }
+                }
+
+                return count($partWords) > 0 && $matched === count($partWords);
             });
 
             if ($match && $match->quantity >= $part->quantity_needed) {

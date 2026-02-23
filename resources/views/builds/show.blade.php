@@ -233,7 +233,18 @@ function buildDetail() {
             return this.inventory.some(item => {
                 const itemName = item.name.toLowerCase();
                 const partName = part.name.toLowerCase();
-                return itemName.includes(partName) || partName.includes(itemName);
+
+                if (itemName.includes(partName) || partName.includes(itemName)) return true;
+
+                // Check individual words (handles "Jumper Wires" matching "Jumper Wire 20cm Package")
+                const words = partName.split(/[\s\-\/]+/);
+                let matched = 0;
+                for (const w of words) {
+                    const stem = w.replace(/s$/, '');
+                    if (stem && stem.length > 2 && itemName.includes(stem)) matched++;
+                }
+
+                return words.length > 0 && matched === words.length;
             });
         },
 
