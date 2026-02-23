@@ -251,19 +251,19 @@
     </div>
 
     <!-- ===== SHOPPING LIST ===== -->
-    <div class="mt-6 panel" x-show="shoppingList.length > 0">
+    <div class="mt-6 panel" x-show="shoppingList.length > 0" x-init="$nextTick(() => autoPriceCheck())">
         <div class="panel-header">
             <div>
                 <h2 class="text-xl font-bold text-white">Shopping List</h2>
                 <p class="text-sm text-gray-400 mt-0.5" x-text="shoppingList.length + ' item' + (shoppingList.length !== 1 ? 's' : '') + ' needed'"></p>
             </div>
-            <button @click="checkAllPrices()" :disabled="priceCheckLoading" class="px-3 py-2 text-sm font-semibold bg-green-500/15 text-green-300 rounded-lg hover:bg-green-500/25 transition disabled:opacity-40">
-                <span x-show="!priceCheckLoading">Compare Prices</span>
-                <span x-show="priceCheckLoading" class="flex items-center gap-2">
-                    <svg class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
-                    Checking...
-                </span>
-            </button>
+            <div class="flex items-center gap-2" x-show="priceCheckLoading">
+                <svg class="animate-spin w-4 h-4 text-green-400" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+                <span class="text-xs text-gray-400">Checking prices...</span>
+            </div>
+        </div>
+        <div class="px-4 py-2.5 border-b border-white/[0.06]">
+            <p class="text-xs text-gray-500">Prices are scraped from retailer search results and may not reflect exact matches. Click any price to see the full listing. eBay links open their search directly.</p>
         </div>
         <div class="panel-body">
             <template x-for="item in shoppingList" :key="item.name">
@@ -706,13 +706,22 @@ function dashboardApp() {
             item.loading = false;
         },
 
-        async checkAllPrices() {
+        async autoPriceCheck() {
+            const unchecked = this.shoppingList.filter(i => !i.prices);
+            if (unchecked.length === 0) return;
             this.priceCheckLoading = true;
-            for (const item of this.shoppingList) {
-                if (!item.prices) {
-                    await this.checkPrice(item);
-                }
+
+            // Check first 2 immediately as a teaser
+            for (let i = 0; i < Math.min(2, unchecked.length); i++) {
+                await this.checkPrice(unchecked[i]);
             }
+
+            // Stagger the rest with 3-second delays to avoid hammering
+            for (let i = 2; i < unchecked.length; i++) {
+                await new Promise(r => setTimeout(r, 3000));
+                await this.checkPrice(unchecked[i]);
+            }
+
             this.priceCheckLoading = false;
         },
 
