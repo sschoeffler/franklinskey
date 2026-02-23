@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Project;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 
 class ProjectController extends Controller
@@ -12,11 +13,24 @@ class ProjectController extends Controller
     {
         $sessionId = $this->getSessionId($request);
 
-        $projects = Project::where('session_id', $sessionId)
-            ->orderByDesc('updated_at')
-            ->get();
+        $query = Project::where('session_id', $sessionId);
 
-        return view('app', compact('projects'));
+        // Also include projects owned by the authenticated user
+        if (Auth::check()) {
+            $query->orWhere('user_id', Auth::id());
+        }
+
+        $projects = $query->orderByDesc('updated_at')->get();
+
+        // Pass builds and inventory summary for authenticated users
+        $builds = collect();
+        $inventoryCount = 0;
+        if (Auth::check()) {
+            $builds = Auth::user()->builds()->with('parts')->get();
+            $inventoryCount = Auth::user()->inventoryItems()->count();
+        }
+
+        return view('app', compact('projects', 'builds', 'inventoryCount'));
     }
 
     public function create(Request $request)
@@ -31,6 +45,7 @@ class ProjectController extends Controller
 
         $project = Project::create([
             'session_id' => $sessionId,
+            'user_id' => Auth::id(),
             'name' => $request->name,
             'slug' => $slug,
             'board_type' => $request->board_type,
@@ -44,8 +59,7 @@ class ProjectController extends Controller
 
     public function rename(Request $request, Project $project)
     {
-        $sessionId = $this->getSessionId($request);
-        if ($project->session_id !== $sessionId) {
+        if (!$this->canAccess($request, $project)) {
             abort(403);
         }
 
@@ -60,14 +74,28 @@ class ProjectController extends Controller
 
     public function destroy(Request $request, Project $project)
     {
-        $sessionId = $this->getSessionId($request);
-        if ($project->session_id !== $sessionId) {
+        if (!$this->canAccess($request, $project)) {
             abort(403);
         }
 
         $project->delete();
 
         return response()->json(['success' => true]);
+    }
+
+    private function canAccess(Request $request, Project $project): bool
+    {
+        $sessionId = $this->getSessionId($request);
+
+        if ($project->session_id === $sessionId) {
+            return true;
+        }
+
+        if (Auth::check() && $project->user_id === Auth::id()) {
+            return true;
+        }
+
+        return false;
     }
 
     private function getSessionId(Request $request): string

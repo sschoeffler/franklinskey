@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Project extends Model
 {
-    protected $fillable = ['session_id', 'name', 'slug', 'board_type'];
+    protected $fillable = ['session_id', 'user_id', 'name', 'slug', 'board_type'];
 
     public function getRouteKeyName(): string
     {

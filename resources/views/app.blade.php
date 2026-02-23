@@ -8,21 +8,24 @@
     <!-- Header -->
     <div class="text-center mb-10">
         <h1 class="text-3xl sm:text-4xl font-bold mb-3">
-            <span class="bg-gradient-to-r from-amber-400 to-yellow-300 bg-clip-text text-transparent">Your Projects</span>
+            <span class="bg-gradient-to-r from-amber-400 to-yellow-300 bg-clip-text text-transparent">Circuit Assistant</span>
         </h1>
         <p class="text-gray-400">Describe what you want to build. Franklin's Key handles the wiring and code.</p>
+        @auth
+        <p class="text-sm text-gray-500 mt-1">Your inventory ({{ $inventoryCount }} items) and builds are shared with the assistant.</p>
+        @endauth
     </div>
 
     <!-- New Project Form -->
     <div class="mb-10 p-6 rounded-xl border border-white/[0.06] bg-white/[0.02] backdrop-blur-sm">
-        <h2 class="text-lg font-semibold text-amber-400 mb-4">Start a New Project</h2>
+        <h2 class="text-lg font-semibold text-amber-400 mb-4">Start a New Conversation</h2>
         <form @submit.prevent="createProject" class="space-y-4">
             <div>
-                <label class="block text-sm font-medium text-gray-400 mb-1.5">What do you want to build?</label>
+                <label class="block text-sm font-medium text-gray-400 mb-1.5">What do you want to build or ask about?</label>
                 <input
                     type="text"
                     x-model="newName"
-                    placeholder='e.g. "LED that blinks when it gets dark"'
+                    placeholder='e.g. "LED that blinks when it gets dark" or "Help me fix my inventory"'
                     class="w-full px-4 py-3 bg-white/[0.04] border border-white/[0.08] rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/30 transition"
                     maxlength="100"
                     required
@@ -41,6 +44,7 @@
                     <option value="ESP32">ESP32</option>
                     <option value="ESP8266">ESP8266</option>
                     <option value="Raspberry Pi Pico">Raspberry Pi Pico</option>
+                    <option value="Raspberry Pi 5">Raspberry Pi 5</option>
                 </select>
             </div>
             <button
@@ -54,8 +58,37 @@
         </form>
     </div>
 
-    <!-- Project List -->
+    @auth
+    @if($builds->count() > 0)
+    <!-- Quick Start from Builds -->
+    <div class="mb-8">
+        <h2 class="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-3">Your Build Projects</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            @foreach($builds as $build)
+            @php $readiness = $build->readiness; @endphp
+            <button
+                @click="startFromBuild('{{ e($build->name) }}', '{{ $readiness['ready'] }}', '{{ $readiness['total'] }}')"
+                class="text-left p-4 rounded-xl border border-white/[0.06] bg-white/[0.02] hover:border-amber-500/20 hover:bg-amber-500/[0.03] transition group"
+            >
+                <div class="font-semibold text-white text-sm group-hover:text-amber-400 transition truncate">{{ $build->name }}</div>
+                <div class="text-xs text-gray-500 mt-1">
+                    <span class="{{ $readiness['percent'] === 100 ? 'text-green-400' : 'text-amber-400/70' }}">{{ $readiness['ready'] }}/{{ $readiness['total'] }} parts</span>
+                    @if($build->description)
+                    &middot; {{ Str::limit($build->description, 40) }}
+                    @endif
+                </div>
+            </button>
+            @endforeach
+        </div>
+    </div>
+    @endif
+    @endauth
+
+    <!-- Chat Project List -->
     @if($projects->count() > 0)
+    <div class="mb-4">
+        <h2 class="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-3">Conversations</h2>
+    </div>
     <div class="space-y-3">
         @foreach($projects as $project)
         <div class="group flex items-center justify-between p-4 rounded-xl border border-white/[0.06] bg-white/[0.02] hover:border-amber-500/20 transition">
@@ -86,7 +119,10 @@
     @else
     <div class="text-center py-12 text-gray-500">
         <div class="text-4xl mb-3">&#x26A1;</div>
-        <p>No projects yet. Describe what you want to build above!</p>
+        <p>No conversations yet. Start one above!</p>
+        @auth
+        <p class="text-sm mt-2">The assistant knows your inventory and builds — ask it anything.</p>
+        @endauth
     </div>
     @endif
 </div>
@@ -99,6 +135,18 @@ function projectHub() {
         newName: '',
         newBoard: '',
         creating: false,
+
+        startFromBuild(buildName, ready, total) {
+            const missing = total - ready;
+            if (missing > 0) {
+                this.newName = `Help with my ${buildName} build — ${missing} parts missing`;
+            } else {
+                this.newName = `Build guide for ${buildName} — all parts ready!`;
+            }
+            this.$nextTick(() => {
+                this.createProject();
+            });
+        },
 
         async createProject() {
             if (!this.newName.trim() || this.creating) return;

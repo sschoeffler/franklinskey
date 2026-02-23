@@ -3,16 +3,22 @@
 namespace App\Services;
 
 use App\Models\Project;
+use App\Models\User;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 class CircuitAssistant
 {
-    public function getSystemPrompt(Project $project): string
+    public function getSystemPrompt(Project $project, ?User $user = null): string
     {
         $boardContext = $project->board_type
             ? "The user is working with a {$project->board_type}."
             : "The user hasn't specified their board yet. Ask what board they have (Arduino Uno, ESP32, Raspberry Pi Pico, etc.) when it becomes relevant.";
+
+        $inventoryContext = '';
+        if ($user) {
+            $inventoryContext = $this->buildInventoryContext($user);
+        }
 
         return <<<PROMPT
 You are Franklin's Key — a patient, encouraging circuit-building assistant for beginners.
@@ -61,7 +67,61 @@ PROJECT: "{$project->name}"
 - Common sensors, LEDs, motors, displays, buzzers, relays (low-voltage only)
 - Beginner to intermediate projects
 - If asked about something outside scope, be honest: "That's beyond what I can help with safely"
+{$inventoryContext}
 PROMPT;
+    }
+
+    private function buildInventoryContext(User $user): string
+    {
+        $inventory = $user->inventoryItems()->orderBy('category')->orderBy('name')->get();
+        $builds = $user->builds()->with('parts')->get();
+
+        if ($inventory->isEmpty() && $builds->isEmpty()) {
+            return '';
+        }
+
+        $context = "\n\n## User's Workshop\n";
+        $context .= "The user is logged in and has a tracked inventory and build projects. Use this info to give personalized advice.\n";
+
+        if ($inventory->isNotEmpty()) {
+            $context .= "\n### Inventory ({$inventory->count()} items)\n";
+            foreach ($inventory as $item) {
+                $line = "- {$item->name} (qty: {$item->quantity}, category: {$item->category})";
+                if ($item->description) {
+                    $line .= " — {$item->description}";
+                }
+                $context .= $line . "\n";
+            }
+        }
+
+        if ($builds->isNotEmpty()) {
+            $context .= "\n### Build Projects\n";
+            foreach ($builds as $build) {
+                $readiness = $build->readiness;
+                $context .= "\n**{$build->name}** ({$readiness['ready']}/{$readiness['total']} parts ready)\n";
+                if ($build->description) {
+                    $context .= "{$build->description}\n";
+                }
+                $context .= "Parts needed:\n";
+                foreach ($build->parts as $part) {
+                    $opt = $part->is_optional ? ' (optional)' : '';
+                    $context .= "  - {$part->name} x{$part->quantity_needed}{$opt}\n";
+                }
+            }
+        }
+
+        $context .= <<<RULES
+
+### Inventory Management
+When the user asks you to fix inventory issues (mismatched names, wrong categories, missing items, kits that should cover sub-components, etc.):
+- Explain what you'd recommend changing
+- Be specific about which items to rename, recategorize, or adjust quantities for
+- If a kit in inventory (like a robot kit) should cover multiple build parts (chassis, wheels, motors), tell the user which build parts are already covered by the kit
+- You can suggest the user use the Workbench dashboard to make edits, or describe the exact changes needed
+
+RULES;
+
+        return $context;
     }
 
     public function buildMessagesArray(Project $project, string $message, ?string $imagePath = null, ?string $imageMime = null): array
@@ -135,9 +195,9 @@ PROMPT;
         return $messages;
     }
 
-    public function chat(Project $project, string $message, ?string $imagePath = null, ?string $imageMime = null): string
+    public function chat(Project $project, string $message, ?string $imagePath = null, ?string $imageMime = null, ?User $user = null): string
     {
-        $systemPrompt = $this->getSystemPrompt($project);
+        $systemPrompt = $this->getSystemPrompt($project, $user);
         $messages = $this->buildMessagesArray($project, $message, $imagePath, $imageMime);
 
         try {

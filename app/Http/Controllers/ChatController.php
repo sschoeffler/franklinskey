@@ -6,6 +6,7 @@ use App\Models\Message;
 use App\Models\Project;
 use App\Services\CircuitAssistant;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
@@ -13,8 +14,7 @@ class ChatController extends Controller
 {
     public function show(Request $request, Project $project)
     {
-        $sessionId = $request->cookie('fk_session_id');
-        if ($project->session_id !== $sessionId) {
+        if (!$this->canAccess($request, $project)) {
             abort(403);
         }
 
@@ -27,8 +27,7 @@ class ChatController extends Controller
 
     public function send(Request $request, Project $project)
     {
-        $sessionId = $request->cookie('fk_session_id');
-        if ($project->session_id !== $sessionId) {
+        if (!$this->canAccess($request, $project)) {
             return response()->json(['success' => false, 'error' => 'Unauthorized'], 403);
         }
 
@@ -59,9 +58,10 @@ class ChatController extends Controller
             'user_ip' => $request->ip(),
         ]);
 
-        // Get AI response
+        // Get AI response with user context
         $assistant = new CircuitAssistant();
-        $response = $assistant->chat($project, $request->message, $imagePath, $imageMime);
+        $user = Auth::check() ? Auth::user() : ($project->user_id ? $project->user : null);
+        $response = $assistant->chat($project, $request->message, $imagePath, $imageMime, $user);
 
         // Save assistant message
         Message::create([
@@ -88,5 +88,20 @@ class ChatController extends Controller
             'success' => true,
             'token' => csrf_token(),
         ]);
+    }
+
+    private function canAccess(Request $request, Project $project): bool
+    {
+        $sessionId = $request->cookie('fk_session_id');
+
+        if ($project->session_id === $sessionId) {
+            return true;
+        }
+
+        if (Auth::check() && $project->user_id === Auth::id()) {
+            return true;
+        }
+
+        return false;
     }
 }
