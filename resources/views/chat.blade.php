@@ -2,15 +2,69 @@
 if (!function_exists('formatResponse')) {
 function formatResponse($text) {
     if (!$text) return '';
-    // Strip code markers and their content for server-rendered messages
+    // Strip code markers
     $text = preg_replace('/<!--CODE_START-->[\s\S]*?<!--CODE_END-->/', '<p class="text-amber-400/60 text-xs italic">[Code prepared — ready to upload]</p>', $text);
     $text = e($text);
-    // Restore the code-prepared tag after escaping
     $text = str_replace('&lt;p class=&quot;text-amber-400/60 text-xs italic&quot;&gt;[Code prepared — ready to upload]&lt;/p&gt;', '<p class="text-amber-400/60 text-xs italic">[Code prepared — ready to upload]</p>', $text);
-    $text = preg_replace('/\*\*(.*?)\*\*/', '<strong>$1</strong>', $text);
-    $text = preg_replace('/`([^`]+)`/', '<code class="px-1 py-0.5 bg-white/5 rounded text-amber-300 text-xs">$1</code>', $text);
-    $text = nl2br($text);
-    return $text;
+
+    // Process line by line for tables, lists, headings
+    $lines = explode("\n", $text);
+    $html = '';
+    $inTable = false;
+    $inList = false;
+
+    foreach ($lines as $line) {
+        $trimmed = trim($line);
+
+        // Table rows
+        if (preg_match('/^\|(.+)\|$/', $trimmed)) {
+            // Skip separator rows
+            if (preg_match('/^\|[\s\-\|:]+\|$/', $trimmed)) continue;
+            if (!$inTable) {
+                if ($inList) { $html .= '</ul>'; $inList = false; }
+                $html .= '<table class="w-full text-sm my-2 border-collapse"><tbody>';
+                $inTable = true;
+            }
+            $cells = array_map('trim', explode('|', trim($trimmed, '|')));
+            $html .= '<tr>';
+            foreach ($cells as $cell) {
+                $cell = preg_replace('/\*\*(.*?)\*\*/', '<strong>$1</strong>', $cell);
+                $html .= '<td class="px-2 py-1 border border-white/10">' . $cell . '</td>';
+            }
+            $html .= '</tr>';
+            continue;
+        }
+
+        if ($inTable) { $html .= '</tbody></table>'; $inTable = false; }
+
+        // Headings
+        if (preg_match('/^#{1,3}\s+(.+)$/', $trimmed, $m)) {
+            if ($inList) { $html .= '</ul>'; $inList = false; }
+            $html .= '<div class="font-semibold text-amber-300 mt-3 mb-1">' . e($m[1]) . '</div>';
+            continue;
+        }
+
+        // List items (- or *)
+        if (preg_match('/^[\-\*]\s+(.+)$/', $trimmed, $m)) {
+            if (!$inList) { $html .= '<ul class="list-disc list-inside my-1 space-y-0.5">'; $inList = true; }
+            $item = preg_replace('/\*\*(.*?)\*\*/', '<strong>$1</strong>', $m[1]);
+            $item = preg_replace('/`([^`]+)`/', '<code class="px-1 py-0.5 bg-white/5 rounded text-amber-300 text-xs">$1</code>', $item);
+            $html .= '<li>' . $item . '</li>';
+            continue;
+        }
+
+        if ($inList) { $html .= '</ul>'; $inList = false; }
+
+        // Regular line
+        $line = preg_replace('/\*\*(.*?)\*\*/', '<strong>$1</strong>', $line);
+        $line = preg_replace('/`([^`]+)`/', '<code class="px-1 py-0.5 bg-white/5 rounded text-amber-300 text-xs">$1</code>', $line);
+        $html .= $line . '<br>';
+    }
+
+    if ($inTable) $html .= '</tbody></table>';
+    if ($inList) $html .= '</ul>';
+
+    return $html;
 }
 }
 @endphp
@@ -303,14 +357,62 @@ function chatInterface() {
 
         formatResponse(text) {
             if (!text) return '';
-            // Strip code markers and their content
             text = text.replace(/<!--CODE_START-->[\s\S]*?<!--CODE_END-->/g, '<p class="text-amber-400/60 text-xs italic">[Code prepared — ready to upload]</p>');
-            // Basic markdown-like formatting
-            text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-            text = text.replace(/`([^`]+)`/g, '<code class="px-1 py-0.5 bg-white/5 rounded text-amber-300 text-xs">$1</code>');
-            // Newlines to breaks
-            text = text.replace(/\n/g, '<br>');
-            return text;
+
+            const lines = text.split('\n');
+            let html = '';
+            let inTable = false;
+            let inList = false;
+
+            for (const line of lines) {
+                const trimmed = line.trim();
+
+                // Table rows
+                if (/^\|(.+)\|$/.test(trimmed)) {
+                    if (/^\|[\s\-|:]+\|$/.test(trimmed)) continue;
+                    if (!inTable) {
+                        if (inList) { html += '</ul>'; inList = false; }
+                        html += '<table class="w-full text-sm my-2 border-collapse"><tbody>';
+                        inTable = true;
+                    }
+                    const cells = trimmed.replace(/^\||\|$/g, '').split('|').map(c => c.trim());
+                    html += '<tr>' + cells.map(c =>
+                        '<td class="px-2 py-1 border border-white/10">' + c.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') + '</td>'
+                    ).join('') + '</tr>';
+                    continue;
+                }
+
+                if (inTable) { html += '</tbody></table>'; inTable = false; }
+
+                // Headings
+                const headingMatch = trimmed.match(/^#{1,3}\s+(.+)$/);
+                if (headingMatch) {
+                    if (inList) { html += '</ul>'; inList = false; }
+                    html += '<div class="font-semibold text-amber-300 mt-3 mb-1">' + headingMatch[1] + '</div>';
+                    continue;
+                }
+
+                // List items
+                const listMatch = trimmed.match(/^[-*]\s+(.+)$/);
+                if (listMatch) {
+                    if (!inList) { html += '<ul class="list-disc list-inside my-1 space-y-0.5">'; inList = true; }
+                    let item = listMatch[1].replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+                    item = item.replace(/`([^`]+)`/g, '<code class="px-1 py-0.5 bg-white/5 rounded text-amber-300 text-xs">$1</code>');
+                    html += '<li>' + item + '</li>';
+                    continue;
+                }
+
+                if (inList) { html += '</ul>'; inList = false; }
+
+                // Regular line
+                let out = line.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+                out = out.replace(/`([^`]+)`/g, '<code class="px-1 py-0.5 bg-white/5 rounded text-amber-300 text-xs">$1</code>');
+                html += out + '<br>';
+            }
+
+            if (inTable) html += '</tbody></table>';
+            if (inList) html += '</ul>';
+            return html;
         },
 
         scrollToBottom() {
