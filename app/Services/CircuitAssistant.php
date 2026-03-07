@@ -591,7 +591,7 @@ RULES;
         return $messages;
     }
 
-    public function chat(Project $project, string $message, ?string $imagePath = null, ?string $imageMime = null, ?User $user = null): string
+    public function chat(Project $project, string $message, ?string $imagePath = null, ?string $imageMime = null, ?User $user = null, ?string $ip = null): string
     {
         $systemPrompt = $this->getSystemPrompt($project, $user);
         $systemPrompt .= BraveSearch::searchAndFormat($message);
@@ -600,12 +600,24 @@ RULES;
         // Only provide tools for authenticated users
         $tools = $user ? $this->getTools() : [];
 
+        // Graduated model downgrade: switch to Haiku after 50 messages/day per IP
+        $model = config('franklinskey.model');
+        if ($ip) {
+            $todayCount = \App\Models\Message::where('user_ip', $ip)
+                ->where('role', 'user')
+                ->where('created_at', '>=', now()->startOfDay())
+                ->count();
+            if ($todayCount >= 50) {
+                $model = 'claude-haiku-4-5-20251001';
+            }
+        }
+
         try {
             $maxToolRounds = 3;
 
             for ($round = 0; $round <= $maxToolRounds; $round++) {
                 $payload = [
-                    'model' => config('franklinskey.model'),
+                    'model' => $model,
                     'max_tokens' => config('franklinskey.max_tokens'),
                     'system' => $systemPrompt,
                     'messages' => $messages,

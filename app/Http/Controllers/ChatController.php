@@ -61,7 +61,7 @@ class ChatController extends Controller
         // Get AI response with user context
         $assistant = new CircuitAssistant();
         $user = Auth::check() ? Auth::user() : ($project->user_id ? $project->user : null);
-        $response = $assistant->chat($project, $request->message, $imagePath, $imageMime, $user);
+        $response = $assistant->chat($project, $request->message, $imagePath, $imageMime, $user, $request->ip());
 
         // Save assistant message
         Message::create([
