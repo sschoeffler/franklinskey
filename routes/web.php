@@ -63,5 +63,5 @@ Route::patch('/api/projects/{project:slug}', [ProjectController::class, 'rename'
 Route::delete('/api/projects/{project:slug}', [ProjectController::class, 'destroy']);
 
 Route::get('/project/{project:slug}', [ChatController::class, 'show']);
-Route::post('/api/chat/{project:slug}', [ChatController::class, 'send']);
+Route::post('/api/chat/{project:slug}', [ChatController::class, 'send'])->middleware('throttle:20,1');
 Route::post('/api/ping', [ChatController::class, 'ping']);
